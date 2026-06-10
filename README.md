@@ -24,11 +24,12 @@ cp .env.example .env
 ```bash
 VITE_API_BASE_URL=/api
 VITE_DEV_PROXY_TARGET=http://localhost:3000
+CHATBOX_API_URL=http://localhost:3000
 ```
 
 En desarrollo, Vite proxy redirige `/api/*` a `http://localhost:3000/*`. Esto evita modificar CORS del backend, que hoy esta configurado como API privada sin browser CORS abierto.
 
-Para produccion, apunta `VITE_API_BASE_URL` al dominio real del backend Chatbox o usa un reverse proxy que publique `/api`.
+En Vercel, `/api/*` se resuelve con la funcion serverless `api/[...path].js`, que reenvia la solicitud a `CHATBOX_API_URL`. Asi el navegador consume el mismo origen y no depende de CORS del backend.
 
 ## Scripts
 
@@ -61,6 +62,25 @@ npm run dev
 ```
 
 Abre `http://localhost:5173`.
+
+## Deploy en Vercel
+
+Importa este repo `whabot` en Vercel con:
+
+- Framework preset: `Vite`
+- Install command: `npm install` o `npm ci`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Root directory: raiz del repo
+
+Variables de entorno en Vercel:
+
+```bash
+VITE_API_BASE_URL=/api
+CHATBOX_API_URL=https://tu-backend-chatbox.example.com
+```
+
+`CHATBOX_API_URL` debe apuntar al dominio publico del backend `chatbox`, sin slash final. No debe apuntar al dominio de Vercel del frontend.
 
 ## Relacion con Chatbox
 
