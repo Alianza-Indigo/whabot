@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de privacidad — Whabo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0E1B16;--paper:#FAFAF7;--green:#1FA463;--green-deep:#0E5C38;--muted:#5C6B63;--line:#E2E5DF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Instrument Sans',sans-serif;background:var(--paper);color:var(--ink);line-height:1.7;font-size:16.5px}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+nav{border-bottom:1px solid var(--line)}
+.nav-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:22px;text-decoration:none;color:var(--ink);letter-spacing:-0.02em}
+.logo span{color:var(--green)}
+.nav-in a:not(.logo){font-size:15px;color:var(--muted);text-decoration:none}
+main{padding:64px 0 80px}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:38px;letter-spacing:-0.02em;line-height:1.1;margin-bottom:8px}
+.updated{font-size:14px;color:var(--muted);margin-bottom:44px}
+h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:500;font-size:22px;margin:40px 0 12px}
+p,li{color:#2A3530}
+ul{padding-left:22px;margin:10px 0}
+li{margin-bottom:6px}
+a{color:var(--green-deep)}
+footer{border-top:1px solid var(--line);padding:28px 0;font-size:14px;color:var(--muted)}
+.foot-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.foot-in a{color:var(--muted);text-decoration:none;margin-left:20px}
+</style>
+</head>
+<body>
+<nav><div class="nav-in"><a class="logo" href="/">wha<span>bo</span></a><a href="/">← Volver al inicio</a></div></nav>
+<main class="wrap">
+<h1>Política de privacidad</h1>
+<p class="updated">Última actualización: junio de 2026</p>
+
+<p>Esta política describe cómo Whabo (whabo.xyz), operado por [Tu nombre fiscal completo], persona física con actividad empresarial con domicilio en Ciudad de México, México, trata los datos personales en su plataforma de agentes conversacionales de WhatsApp, en cumplimiento de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y su normativa aplicable.</p>
+
+<h2>1. Roles en el tratamiento</h2>
+<ul>
+<li><b>Clientes de Whabo</b> (los negocios que crean cuentas): Whabo actúa como responsable del tratamiento de sus datos de cuenta.</li>
+<li><b>Usuarios finales</b> (las personas que conversan con los agentes de los Clientes por WhatsApp): el Cliente correspondiente actúa como responsable del tratamiento, y Whabo como encargado, procesando los datos únicamente para operar el agente conforme a la configuración del Cliente.</li>
+</ul>
+
+<h2>2. Datos que tratamos</h2>
+<p><b>De los Clientes:</b> correo electrónico, contraseña (almacenada como hash, nunca en texto plano), nombre de la organización, y las credenciales de servicios de terceros que el Cliente conecta (llaves de proveedores de IA y de WhatsApp Business), almacenadas cifradas.</p>
+<p><b>De los usuarios finales:</b></p>
+<ul>
+<li>Número telefónico: se almacena como hash criptográfico con sal secreta (HMAC-SHA256). No conservamos los números en texto plano en nuestra base de datos.</li>
+<li>Contenido de las conversaciones con el agente: se almacena cifrado con AES-256-GCM.</li>
+<li>Preferencia de idioma, estado de consentimiento y, en su caso, calificaciones de satisfacción que el usuario otorgue.</li>
+</ul>
+
+<h2>3. Finalidades</h2>
+<ul>
+<li>Operar los agentes conversacionales: recibir mensajes, generar respuestas mediante el modelo de IA configurado por el Cliente y enviarlas por WhatsApp.</li>
+<li>Mantener el contexto de la conversación dentro de la ventana de historial configurada por el Cliente.</li>
+<li>Aplicar medidas de seguridad de contenido, incluyendo la detección de situaciones de crisis para ofrecer líneas de atención adecuadas.</li>
+<li>Medir el uso del servicio para fines de facturación y operación (conteos de mensajes por organización).</li>
+<li>Mantener registros de auditoría de las operaciones administrativas realizadas en cada cuenta.</li>
+</ul>
+
+<h2>4. Transferencias y encargados</h2>
+<ul>
+<li><b>Meta Platforms (WhatsApp Business API):</b> la mensajería se transmite a través de la infraestructura de WhatsApp, sujeta a sus propios términos y políticas.</li>
+<li><b>Proveedores de modelos de IA</b> (OpenAI, Anthropic, Google o Mistral, según configure cada Cliente): el contenido de los mensajes se envía al proveedor elegido por el Cliente, usando las credenciales del propio Cliente, para generar las respuestas del agente.</li>
+<li><b>Infraestructura de cómputo y almacenamiento:</b> utilizamos proveedores de nube para alojar la plataforma y la base de datos. Los datos pueden almacenarse en servidores ubicados fuera de México.</li>
+<li><b>Monitoreo de errores:</b> si el Cliente lo habilita, los errores técnicos de su cuenta pueden reportarse a su propio proyecto de Sentry.</li>
+</ul>
+<p>No vendemos datos personales ni los compartimos con terceros para fines publicitarios.</p>
+
+<h2>5. Seguridad</h2>
+<ul>
+<li>Cifrado AES-256-GCM para credenciales y contenido de mensajes, con esquema de rotación de llaves.</li>
+<li>Hash con sal secreta para números telefónicos, lo que impide su recuperación directa incluso ante un acceso indebido a la base de datos.</li>
+<li>Aislamiento estricto entre organizaciones: los datos de un Cliente no son accesibles para otros Clientes.</li>
+<li>Control de acceso por roles dentro de cada organización y registro de auditoría de operaciones administrativas.</li>
+<li>Comunicaciones cifradas en tránsito (TLS).</li>
+</ul>
+
+<h2>6. Conservación</h2>
+<p>Cada Cliente puede configurar el plazo de retención de las conversaciones de su organización (en días). Vencido el plazo, los mensajes se eliminan. Si el Cliente no configura un plazo, las conversaciones se conservan mientras la cuenta esté activa. Los registros de auditoría se conservan para fines de seguridad y cumplimiento.</p>
+
+<h2>7. Derechos ARCO</h2>
+<p>Los titulares pueden ejercer sus derechos de Acceso, Rectificación, Cancelación y Oposición:</p>
+<ul>
+<li><b>Usuarios finales:</b> pueden dirigir su solicitud al negocio con el que conversan (responsable del tratamiento) o escribirnos a <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a>; canalizaremos la solicitud al Cliente correspondiente. La plataforma cuenta con herramientas para exportar, rectificar y suprimir los datos de un usuario final, y cada operación queda auditada.</li>
+<li><b>Clientes:</b> pueden ejercer sus derechos escribiendo a <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a>.</li>
+</ul>
+<p>Responderemos las solicitudes en los plazos previstos por la LFPDPPP. Para acreditar identidad podremos solicitar información adicional razonable.</p>
+
+<h2>8. Consentimiento de usuarios finales</h2>
+<p>Cuando un usuario final declina el tratamiento de sus datos o solicita no ser contactado, la plataforma registra dicha negativa y los agentes dejan de procesarlo conforme a la configuración del Cliente.</p>
+
+<h2>9. Menores de edad</h2>
+<p>La plataforma está dirigida a negocios y a sus clientes. Los Clientes son responsables de no dirigir sus agentes a menores de edad sin las bases legales y salvaguardas correspondientes.</p>
+
+<h2>10. Cambios a esta política</h2>
+<p>Publicaremos cualquier actualización en esta página indicando la fecha de última modificación. Los cambios sustanciales se notificarán a los Clientes por correo o mediante la consola.</p>
+
+<h2>11. Contacto</h2>
+<p>Responsable: [Tu nombre fiscal completo] · Ciudad de México, México · <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a></p>
+</main>
+<footer><div class="foot-in"><span>© 2026 Whabo · whabo.xyz</span><span><a href="/terminos.html">Términos de servicio</a><a href="/privacidad.html">Política de privacidad</a></span></div></footer>
+</body>
+</html>

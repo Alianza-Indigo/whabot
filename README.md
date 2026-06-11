@@ -1,6 +1,8 @@
-# Whabot Console
+# Whabo
 
-Frontend independiente para administrar el backend multi-tenant de Chatbox. Esta app consume exclusivamente endpoints existentes del backend; donde la API no expone datos, la UI muestra estados vacios y TODOs explicitos.
+Landing publica y consola independiente para operar agentes conversacionales de WhatsApp. La raiz del sitio muestra la landing de Whabo; la consola administrativa vive en `/console`.
+
+La app consume exclusivamente endpoints existentes del backend; donde la API no expone datos, la UI muestra estados vacios y TODOs explicitos.
 
 ## Stack
 
@@ -24,12 +26,12 @@ cp .env.example .env
 ```bash
 VITE_API_BASE_URL=/api
 VITE_DEV_PROXY_TARGET=http://localhost:3000
-CHATBOX_API_URL=http://localhost:3000
+WHABO_API_URL=http://localhost:3000
 ```
 
 En desarrollo, Vite proxy redirige `/api/*` a `http://localhost:3000/*`. Esto evita modificar CORS del backend, que hoy esta configurado como API privada sin browser CORS abierto.
 
-En Vercel, `/api/*` se resuelve con la funcion serverless `api/[...path].js`, que reenvia la solicitud a `CHATBOX_API_URL`. Asi el navegador consume el mismo origen y no depende de CORS del backend.
+En Vercel, `/api/*` se resuelve con la funcion serverless `api/[...path].js`, que reenvia la solicitud a `WHABO_API_URL`. Asi el navegador consume el mismo origen y no depende de CORS del backend. El proxy tambien acepta `CHATBOX_API_URL` como variable legacy para despliegues existentes.
 
 ## Scripts
 
@@ -74,7 +76,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Abre `http://localhost:5173`.
+Abre `http://localhost:5173` para ver la landing. La consola queda en `http://localhost:5173/console`.
 
 ## Deploy en Vercel
 
@@ -90,15 +92,22 @@ Variables de entorno en Vercel:
 
 ```bash
 VITE_API_BASE_URL=/api
-CHATBOX_API_URL=https://tu-backend-chatbox.example.com
+WHABO_API_URL=https://tu-backend.example.com
 ```
 
-`CHATBOX_API_URL` debe apuntar al dominio publico del backend `chatbox`, sin slash final. No debe apuntar al dominio de Vercel del frontend.
+`WHABO_API_URL` debe apuntar al dominio publico del backend, sin slash final. No debe apuntar al dominio de Vercel del frontend.
 
-## Relacion con Chatbox
+Rutas publicas:
+
+- `/`: landing de Whabo.
+- `/console`: consola administrativa.
+- `/privacidad.html`: politica de privacidad.
+- `/terminos.html`: terminos de servicio.
+
+## Relacion con el backend
 
 - `chatbox`: backend/API, worker, Prisma, Redis, webhooks, OpenAPI y operaciones de plataforma.
-- `whabot`: consola web React/Vite que consume la API de `chatbox`.
+- `whabot`: landing y consola web React/Vite que consume la API del backend.
 
 ## Seguridad frontend
 

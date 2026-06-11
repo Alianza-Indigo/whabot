@@ -26,35 +26,35 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { ErrorState } from '@/components/common/ErrorState';
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: Gauge },
-  { to: '/organizations', label: 'Organizaciones', icon: Building2 },
-  { to: '/bots', label: 'Agentes', icon: Bot },
-  { to: '/channels', label: 'Canales WhatsApp', icon: Smartphone },
-  { to: '/providers', label: 'Credenciales', icon: KeyRound },
-  { to: '/knowledge', label: 'Knowledge', icon: DatabaseZap },
-  { to: '/templates', label: 'Templates', icon: FileText },
-  { to: '/conversations', label: 'Conversaciones', icon: MessageSquareText },
-  { to: '/dlq', label: 'DLQ', icon: TriangleAlert },
-  { to: '/audit', label: 'Auditoria', icon: ClipboardList },
-  { to: '/compliance', label: 'ARCO', icon: ShieldCheck },
-  { to: '/metrics', label: 'Metricas', icon: ChartSpline },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/console', label: 'Dashboard', icon: Gauge },
+  { to: '/console/organizations', label: 'Organizaciones', icon: Building2 },
+  { to: '/console/bots', label: 'Agentes', icon: Bot },
+  { to: '/console/channels', label: 'Canales WhatsApp', icon: Smartphone },
+  { to: '/console/providers', label: 'Credenciales', icon: KeyRound },
+  { to: '/console/knowledge', label: 'Knowledge', icon: DatabaseZap },
+  { to: '/console/templates', label: 'Templates', icon: FileText },
+  { to: '/console/conversations', label: 'Conversaciones', icon: MessageSquareText },
+  { to: '/console/dlq', label: 'DLQ', icon: TriangleAlert },
+  { to: '/console/audit', label: 'Auditoria', icon: ClipboardList },
+  { to: '/console/compliance', label: 'ARCO', icon: ShieldCheck },
+  { to: '/console/metrics', label: 'Metricas', icon: ChartSpline },
+  { to: '/console/settings', label: 'Settings', icon: Settings },
 ];
 
 const pageNames: Record<string, string> = {
-  '/': 'Dashboard',
-  '/organizations': 'Organizaciones',
-  '/bots': 'Agentes',
-  '/channels': 'Canales WhatsApp',
-  '/providers': 'Credenciales / Providers',
-  '/knowledge': 'Knowledge / RAG',
-  '/templates': 'Templates',
-  '/conversations': 'Conversaciones',
-  '/dlq': 'Dead-letter queue',
-  '/audit': 'Auditoria',
-  '/compliance': 'Compliance / ARCO',
-  '/metrics': 'Metricas',
-  '/settings': 'Settings',
+  '/console': 'Dashboard',
+  '/console/organizations': 'Organizaciones',
+  '/console/bots': 'Agentes',
+  '/console/channels': 'Canales WhatsApp',
+  '/console/providers': 'Credenciales / Providers',
+  '/console/knowledge': 'Knowledge / RAG',
+  '/console/templates': 'Templates',
+  '/console/conversations': 'Conversaciones',
+  '/console/dlq': 'Dead-letter queue',
+  '/console/audit': 'Auditoria',
+  '/console/compliance': 'Compliance / ARCO',
+  '/console/metrics': 'Metricas',
+  '/console/settings': 'Settings',
 };
 
 export function AppLayout() {
@@ -78,7 +78,7 @@ export function AppLayout() {
             <ScrollText className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold">Chatbox</p>
+            <p className="text-sm font-semibold">Whabo</p>
             <p className="text-xs text-muted-foreground">Operations Console</p>
           </div>
         </div>
@@ -86,7 +86,7 @@ export function AppLayout() {
           {navItems.map((item) => (
             <NavLink
               key={item.to}
-              end={item.to === '/'}
+              end={item.to === '/console'}
               to={item.to}
               className={({ isActive }) =>
                 `flex h-9 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
@@ -145,7 +145,7 @@ export function AppLayout() {
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
-                end={item.to === '/'}
+                end={item.to === '/console'}
                 to={item.to}
                 className={({ isActive }) =>
                   `inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-3 text-sm font-medium ${

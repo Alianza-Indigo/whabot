@@ -30,8 +30,8 @@ export function AuthProvider({ children, queryClient }: { children: React.ReactN
       setSelectedOrgIdState(null);
       queryClient.clear();
     }
-    window.addEventListener('chatbox:session-expired', expire);
-    return () => window.removeEventListener('chatbox:session-expired', expire);
+    window.addEventListener('whabo:session-expired', expire);
+    return () => window.removeEventListener('whabo:session-expired', expire);
   }, [queryClient]);
 
   const value = useMemo<AuthContextValue>(() => {

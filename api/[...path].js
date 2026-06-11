@@ -15,7 +15,7 @@ const HOP_BY_HOP_HEADERS = new Set([
 ]);
 
 function backendUrlFor(request) {
-  const backendBase = process.env.CHATBOX_API_URL;
+  const backendBase = process.env.WHABO_API_URL ?? process.env.CHATBOX_API_URL;
   if (!backendBase) return null;
 
   const incoming = new URL(request.url);
@@ -36,7 +36,7 @@ export default async function handler(request) {
   const target = backendUrlFor(request);
   if (!target) {
     return Response.json(
-      { error: 'CHATBOX_API_URL is not configured for the Vercel API proxy' },
+      { error: 'WHABO_API_URL is not configured for the Vercel API proxy' },
       { status: 500 },
     );
   }
@@ -56,7 +56,7 @@ export default async function handler(request) {
     });
   } catch {
     return Response.json(
-      { error: 'Unable to reach Chatbox API upstream' },
+      { error: 'Unable to reach Whabo API upstream' },
       { status: 502 },
     );
   }

@@ -28,7 +28,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [error, setError] = useState<unknown>(null);
   const location = useLocation();
-  const to = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/';
+  const to = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/console';
 
   const loginForm = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
   const registerForm = useForm<RegisterValues>({
@@ -64,7 +64,7 @@ export function LoginPage() {
             <ShieldCheck className="h-4 w-4 text-primary" />
             Consola privada de infraestructura conversacional
           </div>
-          <h1 className="text-4xl font-semibold tracking-normal text-foreground sm:text-5xl">Chatbox Console</h1>
+          <h1 className="text-4xl font-semibold tracking-normal text-foreground sm:text-5xl">Whabo Console</h1>
           <p className="mt-4 text-lg leading-7 text-muted-foreground">
             Administra organizaciones, agentes, canales, credenciales, safety, knowledge, DLQ, auditoria y cumplimiento ARCO desde una consola operativa.
           </p>

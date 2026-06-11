@@ -48,7 +48,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const requestId = response.headers.get('X-Request-Id');
   if (response.status === 401) {
     clearSession();
-    window.dispatchEvent(new CustomEvent('chatbox:session-expired'));
+    window.dispatchEvent(new CustomEvent('whabo:session-expired'));
   }
 
   if (!response.ok) {

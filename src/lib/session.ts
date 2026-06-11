@@ -1,6 +1,6 @@
 import type { LoginResponse, RegisterResponse, Role, SessionUser } from './types';
 
-const SESSION_KEY = 'chatbox.session.v1';
+const SESSION_KEY = 'whabo.session.v1';
 
 interface StoredSession {
   token: string;

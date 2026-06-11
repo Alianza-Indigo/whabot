@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './features/auth/LoginPage';
 import { useAuth } from './features/auth/AuthProvider';
+import { LandingPage } from './features/landing/LandingPage';
 import { AuditPage } from './features/audit/AuditPage';
 import { BotsPage } from './features/bots/BotsPage';
 import { ChannelsPage } from './features/channels/ChannelsPage';
@@ -19,15 +20,18 @@ import { TemplatesPage } from './features/templates/TemplatesPage';
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const location = useLocation();
-  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!user) return <Navigate to="/console/login" replace state={{ from: location }} />;
   return children;
 }
 
 export function App() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Navigate to="/console/login" replace />} />
+      <Route path="/console/login" element={<LoginPage />} />
       <Route
+        path="/console"
         element={
           <RequireAuth>
             <AppLayout />
