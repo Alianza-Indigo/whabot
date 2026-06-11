@@ -37,8 +37,21 @@ En Vercel, `/api/*` se resuelve con la funcion serverless `api/[...path].js`, qu
 npm run dev
 npm run build
 npm run lint
+npm test
 npm run typecheck
 npm run preview
+```
+
+## Validacion
+
+El repo incluye CI en GitHub Actions (`.github/workflows/ci.yml`) con:
+
+```bash
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
 ```
 
 ## Correr con backend local
