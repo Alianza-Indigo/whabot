@@ -162,8 +162,8 @@
     color: #fff;
   }
 
-  .landing-nav-links .landing-btn,
-  .landing-nav-links .landing-btn:hover,
+  .landing-nav-links .landing-btn:not(.landing-btn-secondary),
+  .landing-nav-links .landing-btn:not(.landing-btn-secondary):hover,
   .landing-hero-cta .landing-btn,
   .landing-hero-cta .landing-btn:hover,
   .landing-contact .landing-btn,
