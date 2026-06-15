@@ -161,7 +161,7 @@ export function LandingPage() {
               <a href="mailto:contacto@amecrec.org">contacto@amecrec.org</a>
             </dd>
             <dt>Responsable</dt>
-            <dd>Asociacion Mexicana</dd>
+            <dd>Asociacion Mexicana de Criptomineria Ecológica AC</dd>
             <dt>Ubicacion</dt>
             <dd>Chihuahua, Mexico</dd>
           </dl>
