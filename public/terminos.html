@@ -3,92 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Términos de servicio — Whabo</title>
+<title>Terminos y condiciones - Whabo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0E1B16;--paper:#FAFAF7;--green:#1FA463;--green-deep:#0E5C38;--muted:#5C6B63;--line:#E2E5DF}
+:root{--ink:#0e1b16;--paper:#fafaf7;--green:#1fa463;--green-deep:#0e5c38;--muted:#5c6b63;--line:#e2e5df}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Instrument Sans',sans-serif;background:var(--paper);color:var(--ink);line-height:1.7;font-size:16.5px}
-.wrap{max-width:760px;margin:0 auto;padding:0 24px}
-nav{border-bottom:1px solid var(--line)}
-.nav-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:68px}
-.logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:22px;text-decoration:none;color:var(--ink);letter-spacing:-0.02em}
+body{font-family:'Instrument Sans',sans-serif;background:var(--paper);color:var(--ink);line-height:1.7;font-size:16px}
+.wrap{max-width:780px;margin:0 auto;padding:0 24px}
+nav{border-bottom:1px solid var(--line);background:rgba(250,250,247,.94);backdrop-filter:blur(10px)}
+.nav-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px}
+.logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:22px;text-decoration:none;color:var(--ink)}
 .logo span{color:var(--green)}
-.nav-in a:not(.logo){font-size:15px;color:var(--muted);text-decoration:none}
-main{padding:64px 0 80px}
-h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:38px;letter-spacing:-0.02em;line-height:1.1;margin-bottom:8px}
-.updated{font-size:14px;color:var(--muted);margin-bottom:44px}
-h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:500;font-size:22px;margin:40px 0 12px}
-p,li{color:#2A3530}
-ul{padding-left:22px;margin:10px 0}
-li{margin-bottom:6px}
+.nav-link{font-size:15px;color:var(--muted);text-decoration:none}
+.nav-link:hover{color:var(--ink)}
+main{padding:64px 0 88px}
+.eyebrow{display:inline-flex;align-items:center;padding:7px 14px;border-radius:999px;background:#eef3ee;color:var(--green-deep);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:18px}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:40px;line-height:1.05;margin-bottom:10px}
+.updated{font-size:14px;color:var(--muted);margin-bottom:36px}
+.lead{font-size:18px;color:#2a3530;margin-bottom:20px}
+section+section{margin-top:34px}
+h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:500;font-size:24px;line-height:1.2;margin-bottom:10px}
+p,li{color:#2a3530}
+ul{padding-left:22px;margin:12px 0}
+li+li{margin-top:8px}
 a{color:var(--green-deep)}
+.note{margin-top:28px;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:#f3f5f1}
 footer{border-top:1px solid var(--line);padding:28px 0;font-size:14px;color:var(--muted)}
-.foot-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.foot-in a{color:var(--muted);text-decoration:none;margin-left:20px}
+.foot-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot-links{display:flex;flex-wrap:wrap;gap:18px}
+.foot-links a{color:var(--muted);text-decoration:none}
+.foot-links a:hover{color:var(--ink)}
+@media (max-width:720px){
+  h1{font-size:34px}
+  .nav-in,.foot-in{padding:0 18px}
+  .wrap{padding:0 18px}
+}
 </style>
 </head>
 <body>
-<nav><div class="nav-in"><a class="logo" href="/">wha<span>bo</span></a><a href="/">← Volver al inicio</a></div></nav>
+<nav>
+  <div class="nav-in">
+    <a class="logo" href="/">wha<span>bo</span></a>
+    <a class="nav-link" href="/">&larr; Volver al inicio</a>
+  </div>
+</nav>
 <main class="wrap">
-<h1>Términos de servicio</h1>
-<p class="updated">Última actualización: junio de 2026</p>
+  <span class="eyebrow">Whabo</span>
+  <h1>Terminos y condiciones</h1>
+  <p class="updated">Ultima actualizacion: 15 de junio de 2026</p>
+  <p class="lead">Estos terminos regulan el uso de Whabo, la plataforma disponible en <a href="https://www.whabo.xyz">whabo.xyz</a> para crear y operar agentes conversacionales de WhatsApp para negocios y organizaciones, operada por Asociacion Mexicana de Criptomineria Ecologica AC.</p>
 
-<p>Estos términos regulan el uso de Whabo (whabo.xyz), una plataforma de software como servicio para la creación y operación de agentes conversacionales de WhatsApp, operada por [Tu nombre fiscal completo], persona física con actividad empresarial con domicilio en Ciudad de México, México (en adelante, "Whabo", "nosotros"). Al crear una cuenta o utilizar la plataforma, aceptas estos términos.</p>
+  <section>
+    <h2>1. Aceptacion del servicio</h2>
+    <p>Al crear una cuenta, acceder a la consola o utilizar cualquier funcionalidad de Whabo, aceptas estos terminos y te obligas a cumplirlos en nombre propio o de la organizacion a la que representas.</p>
+  </section>
 
-<h2>1. Descripción del servicio</h2>
-<p>Whabo proporciona infraestructura para que negocios y organizaciones ("Clientes") configuren agentes conversacionales que atienden a sus usuarios finales a través de WhatsApp. El servicio incluye una consola de administración, procesamiento de mensajes, integración con proveedores de modelos de lenguaje, base de conocimiento por agente y herramientas de cumplimiento de protección de datos.</p>
+  <section>
+    <h2>2. Descripcion de Whabo</h2>
+    <p>Whabo ofrece una consola web y la infraestructura necesaria para configurar agentes de inteligencia artificial que atienden conversaciones por WhatsApp. El servicio puede incluir gestion de organizaciones, roles de usuario, bots, canales, proveedores de IA, plantillas, conversaciones, metricas, auditoria y funciones de cumplimiento.</p>
+  </section>
 
-<h2>2. Cuentas y organizaciones</h2>
-<ul>
-<li>Cada Cliente opera dentro de una organización aislada. Los datos, agentes, credenciales y conversaciones de una organización no son accesibles para otras organizaciones.</li>
-<li>El Cliente es responsable de mantener la confidencialidad de sus credenciales de acceso y de las acciones realizadas desde su cuenta.</li>
-<li>El Cliente puede invitar a miembros de su equipo y asignarles roles con distintos niveles de permiso. El Cliente es responsable de la gestión de dichos accesos.</li>
-</ul>
+  <section>
+    <h2>3. Cuentas, organizaciones y accesos</h2>
+    <ul>
+      <li>Cada cuenta opera dentro de una organizacion aislada de las demas.</li>
+      <li>Eres responsable de la seguridad de tus credenciales y de la actividad realizada desde tu cuenta.</li>
+      <li>Puedes invitar a miembros de tu equipo y asignarles permisos; tambien eres responsable de la administracion de esos accesos.</li>
+      <li>Debes proporcionar informacion veraz y mantenerla actualizada.</li>
+    </ul>
+  </section>
 
-<h2>3. Credenciales de terceros (modelo "trae tu propia llave")</h2>
-<ul>
-<li>El Cliente conecta sus propias credenciales de proveedores de inteligencia artificial (como OpenAI, Anthropic, Google o Mistral) y de WhatsApp Business (Meta).</li>
-<li>El Cliente es titular de dichas credenciales y responsable de cumplir los términos de cada proveedor, así como de los costos de consumo asociados.</li>
-<li>Whabo almacena estas credenciales cifradas y las utiliza exclusivamente para operar los agentes del Cliente.</li>
-</ul>
+  <section>
+    <h2>4. Credenciales de terceros</h2>
+    <ul>
+      <li>Whabo funciona con credenciales que tu organizacion conecta para servicios de terceros, incluyendo proveedores de modelos de IA y WhatsApp Business.</li>
+      <li>Tu organizacion conserva la titularidad y responsabilidad sobre esas credenciales, su uso, sus costos y el cumplimiento de los terminos de cada proveedor.</li>
+      <li>Whabo utiliza esas credenciales exclusivamente para operar los flujos que configures dentro de la plataforma.</li>
+    </ul>
+  </section>
 
-<h2>4. Uso aceptable</h2>
-<p>El Cliente se compromete a no utilizar la plataforma para:</p>
-<ul>
-<li>Enviar mensajes no solicitados, spam o comunicaciones que violen las políticas de WhatsApp Business y de Meta.</li>
-<li>Difundir contenido ilegal, engañoso, discriminatorio o que infrinja derechos de terceros.</li>
-<li>Suplantar la identidad de otras personas o negocios.</li>
-<li>Recopilar datos de usuarios finales sin base legal o sin informarles conforme a la legislación aplicable.</li>
-</ul>
-<p>El incumplimiento de las políticas de Meta puede resultar en la restricción del número del Cliente por parte de Meta, lo cual está fuera del control de Whabo. Whabo puede suspender cuentas que pongan en riesgo la plataforma o que incurran en usos prohibidos.</p>
+  <section>
+    <h2>5. Uso permitido y uso prohibido</h2>
+    <p>Solo puedes utilizar Whabo para fines licitos y compatibles con la operacion de atencion automatizada por WhatsApp. En particular, no puedes usar el servicio para:</p>
+    <ul>
+      <li>enviar spam, mensajes no solicitados o comunicaciones que incumplan politicas de Meta o WhatsApp Business;</li>
+      <li>suplantar personas, negocios o marcas;</li>
+      <li>difundir contenido ilicito, fraudulento, discriminatorio o que infrinja derechos de terceros;</li>
+      <li>recabar o tratar datos personales sin contar con base legal, aviso o consentimiento cuando corresponda;</li>
+      <li>intentar vulnerar la seguridad, disponibilidad o integridad de la plataforma.</li>
+    </ul>
+    <p>Whabo puede suspender o restringir cuentas que representen un riesgo operativo, legal o de seguridad para la plataforma o para terceros.</p>
+  </section>
 
-<h2>5. Mensajería proactiva y consentimiento</h2>
-<p>El envío de mensajes iniciados por el negocio (plantillas) requiere que el Cliente cuente con el consentimiento previo del destinatario conforme a las políticas de WhatsApp y la legislación aplicable. La plataforma registra las negativas de consentimiento de usuarios finales y el Cliente debe respetarlas.</p>
+  <section>
+    <h2>6. Mensajeria y consentimiento</h2>
+    <p>Eres responsable de contar con el consentimiento, autorizacion o base legal necesaria para contactar a tus usuarios finales, especialmente en mensajeria proactiva o envio de plantillas. Tambien eres responsable de respetar las bajas, negativas de contacto y preferencias de privacidad de tus usuarios.</p>
+  </section>
 
-<h2>6. Datos personales</h2>
-<p>El tratamiento de datos personales se rige por nuestra <a href="/privacidad.html">Política de privacidad</a>. En la relación con los usuarios finales de cada agente, el Cliente actúa como responsable del tratamiento y Whabo como encargado, procesando datos únicamente conforme a las instrucciones del Cliente y a la configuración de su cuenta.</p>
+  <section>
+    <h2>7. Datos personales</h2>
+    <p>El tratamiento de datos personales se describe en nuestra <a href="/privacidad.html">Politica de privacidad</a>. Respecto de los usuarios finales que interactuan con los agentes de tu organizacion, tu organizacion actua como responsable del tratamiento y Whabo actua como encargado o proveedor de infraestructura, procesando datos segun tu configuracion y tus instrucciones.</p>
+  </section>
 
-<h2>7. Disponibilidad y soporte</h2>
-<p>Whabo se ofrece "tal cual" durante el periodo de acceso temprano. Realizamos esfuerzos razonables para mantener la disponibilidad del servicio, pero no garantizamos operación ininterrumpida. El soporte se brinda por correo a <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a>.</p>
+  <section>
+    <h2>8. Disponibilidad y soporte</h2>
+    <p>Whabo realiza esfuerzos razonables para mantener la disponibilidad del servicio, pero no garantiza operacion ininterrumpida ni libre de errores. El soporte operativo y comercial se atiende mediante <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a>.</p>
+  </section>
 
-<h2>8. Limitación de responsabilidad</h2>
-<p>En la máxima medida permitida por la ley, Whabo no será responsable por daños indirectos, pérdida de beneficios o pérdida de datos derivados del uso del servicio, ni por las respuestas generadas por los modelos de inteligencia artificial configurados por el Cliente, ni por decisiones de Meta sobre los números o cuentas de WhatsApp del Cliente. La responsabilidad total de Whabo se limita al monto pagado por el Cliente en los tres meses anteriores al evento que la origine.</p>
+  <section>
+    <h2>9. Propiedad intelectual</h2>
+    <p>Whabo conserva todos los derechos sobre la plataforma, su software, su diseno, su documentacion y sus componentes propios. Tu organizacion conserva la titularidad sobre su contenido, su base de conocimiento, sus configuraciones y sus credenciales. No adquieres derechos sobre el software de Whabo mas alla del permiso limitado de uso conforme a estos terminos.</p>
+  </section>
 
-<h2>9. Terminación</h2>
-<p>El Cliente puede cancelar su cuenta en cualquier momento. Tras la terminación, los datos de la organización se eliminan conforme a los plazos descritos en la Política de privacidad, salvo obligación legal de conservación.</p>
+  <section>
+    <h2>10. Limitacion de responsabilidad</h2>
+    <p>En la medida maxima permitida por la ley, Whabo no sera responsable por danos indirectos, incidentales, especiales o consecuenciales, perdida de ingresos, perdida de datos o interrupciones atribuibles a proveedores externos, modelos de IA, Meta o a la configuracion definida por tu organizacion. La responsabilidad total de Whabo frente a tu organizacion se limitara al monto efectivamente pagado por tu organizacion a Whabo durante los tres meses anteriores al evento que origine la reclamacion.</p>
+  </section>
 
-<h2>10. Modificaciones</h2>
-<p>Podemos actualizar estos términos. Notificaremos los cambios relevantes por correo o mediante la consola con al menos 15 días de anticipación. El uso continuado del servicio tras la entrada en vigor implica aceptación.</p>
+  <section>
+    <h2>11. Terminacion</h2>
+    <p>Puedes dejar de usar el servicio en cualquier momento. Whabo tambien puede suspender o terminar el acceso en caso de incumplimiento de estos terminos, requerimiento legal o riesgo grave para la plataforma. Tras la terminacion, la informacion se tratara conforme a la Politica de privacidad y a las obligaciones legales aplicables.</p>
+  </section>
 
-<h2>11. Ley aplicable</h2>
-<p>Estos términos se rigen por las leyes de los Estados Unidos Mexicanos. Cualquier controversia se someterá a los tribunales competentes de la Ciudad de México.</p>
+  <section>
+    <h2>12. Cambios a estos terminos</h2>
+    <p>Whabo puede actualizar estos terminos para reflejar cambios legales, tecnicos o de producto. Cuando el cambio sea relevante, se publicara la version actualizada en esta pagina y podra notificarse por correo o desde la consola.</p>
+  </section>
 
-<h2>12. Contacto</h2>
-<p>Para cualquier duda sobre estos términos: <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a>.</p>
+  <section>
+    <h2>13. Ley aplicable y jurisdiccion</h2>
+    <p>Estos terminos se interpretan conforme a las leyes aplicables en Mexico. Cualquier controversia relacionada con el servicio se sometera a los tribunales competentes de la Ciudad de Mexico, salvo disposicion legal distinta.</p>
+  </section>
+
+  <section>
+    <h2>14. Contacto</h2>
+    <p>Para dudas legales, comerciales o de operacion del servicio, puedes escribir a <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a>.</p>
+  </section>
+
+  <div class="note">
+    <p><strong>Operador del servicio:</strong> Asociacion Mexicana de Criptomineria Ecologica AC.</p>
+  </div>
 </main>
-<footer><div class="foot-in"><span>© 2026 Whabo · whabo.xyz</span><span><a href="/terminos.html">Términos de servicio</a><a href="/privacidad.html">Política de privacidad</a></span></div></footer>
+<footer>
+  <div class="foot-in">
+    <span>&copy; 2026 Whabo &middot; whabo.xyz</span>
+    <span class="foot-links">
+      <a href="/terminos.html">Terminos y condiciones</a>
+      <a href="/privacidad.html">Politica de privacidad</a>
+    </span>
+  </div>
+</footer>
 </body>
 </html>
