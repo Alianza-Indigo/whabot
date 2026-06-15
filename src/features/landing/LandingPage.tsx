@@ -15,7 +15,7 @@ export function LandingPage() {
             <Link className="landing-btn landing-btn-secondary" to="/console/login">
               Ingresar
             </Link>
-            <a className="landing-btn" href="mailto:hola@whabo.xyz?subject=Quiero%20probar%20Whabo">
+            <a className="landing-btn" href="mailto:contacto@amecrec.org?subject=Quiero%20probar%20Whabo">
               Solicitar acceso
             </a>
           </div>
@@ -30,38 +30,38 @@ export function LandingPage() {
           </h1>
           <p className="landing-lead">
             Whabo te permite crear agentes de inteligencia artificial que atienden a tus clientes por WhatsApp: con tu
-            conocimiento, tu tono y tus propias credenciales. Tú tienes el control; nosotros la infraestructura.
+            conocimiento, tu tono y tus propias credenciales. Tu tienes el control; nosotros la infraestructura.
           </p>
           <div className="landing-hero-cta">
             <Link className="landing-btn" to="/console/login">
               Ingresar a la consola
             </Link>
             <a className="landing-btn-ghost" href="#como-funciona">
-              Cómo funciona
+              Como funciona
             </a>
           </div>
         </div>
 
-        <div className="landing-phone" aria-label="Ejemplo de conversación con un agente Whabo">
+        <div className="landing-phone" aria-label="Ejemplo de conversacion con un agente Whabo">
           <div className="landing-phone-head">
             <div className="landing-avatar">F</div>
             <div>
-              <b>Florería Marisol</b>
-              <small>Agente Whabo · en línea</small>
+              <b>Floreria Marisol</b>
+              <small>Agente Whabo · en linea</small>
             </div>
           </div>
           <div className="landing-msgs">
-            <div className="landing-msg landing-msg-in">Hola, ¿tienen arreglos para entregar hoy en Coyoacán?</div>
+            <div className="landing-msg landing-msg-in">Hola, tienen arreglos para entregar hoy en Coyoacan?</div>
             <div className="landing-msg landing-msg-out">
-              ¡Hola! Sí, hoy tenemos entrega mismo día en Coyoacán hasta las 6 pm. ¿Buscas algo para una ocasión especial?
+              Hola. Si, hoy tenemos entrega mismo dia en Coyoacan hasta las 6 pm. Buscas algo para una ocasion especial?
             </div>
-            <div className="landing-msg landing-msg-in">Es un cumpleaños, presupuesto como de $600</div>
+            <div className="landing-msg landing-msg-in">Es un cumpleanos, presupuesto como de $600</div>
             <div className="landing-msg landing-msg-out">
-              Perfecto. Te recomiendo el ramo Primavera ($550) o la caja de tulipanes ($590). ¿Te comparto fotos de ambos?
+              Perfecto. Te recomiendo el ramo Primavera ($550) o la caja de tulipanes ($590). Te comparto fotos de ambos?
             </div>
           </div>
           <div className="landing-phone-foot">
-            <span className="landing-dot" /> Responde con el catálogo y horarios del negocio
+            <span className="landing-dot" /> Responde con el catalogo y horarios del negocio
           </div>
         </div>
       </header>
@@ -69,23 +69,23 @@ export function LandingPage() {
       <section id="producto" className="landing-section">
         <div className="landing-wrap">
           <h2>Cada negocio, sus propios agentes</h2>
-          <p className="landing-sub">Whabo es multi-empresa por diseño: tu cuenta, tus bots, tus datos. Nada se comparte entre clientes.</p>
+          <p className="landing-sub">Whabo es multi-empresa por diseno: tu cuenta, tus bots, tus datos. Nada se comparte entre clientes.</p>
           <div className="landing-grid">
             <article className="landing-cell">
               <h3>Tu conocimiento</h3>
-              <p>Carga tu catálogo, horarios, políticas y preguntas frecuentes. El agente responde con tu información, no con la de internet.</p>
+              <p>Carga tu catalogo, horarios, politicas y preguntas frecuentes. El agente responde con tu informacion, no con la de internet.</p>
             </article>
             <article className="landing-cell">
               <h3>Tus credenciales</h3>
-              <p>Conectas tu propia llave de OpenAI, Anthropic, Google o Mistral. Tú decides qué modelo usa tu agente y controlas tu consumo.</p>
+              <p>Conectas tu propia llave de OpenAI, Anthropic, Google o Mistral. Tu decides que modelo usa tu agente y controlas tu consumo.</p>
             </article>
             <article className="landing-cell">
               <h3>Tu numero</h3>
-              <p>Tu agente opera sobre tu número de WhatsApp Business. El número, la relación con tus clientes y el historial son tuyos.</p>
+              <p>Tu agente opera sobre tu numero de WhatsApp Business. El numero, la relacion con tus clientes y el historial son tuyos.</p>
             </article>
             <article className="landing-cell">
               <h3>Tu equipo</h3>
-              <p>Invita colaboradores con permisos por rol: quién edita el agente, quién administra credenciales y quién solo consulta.</p>
+              <p>Invita colaboradores con permisos por rol: quien edita el agente, quien administra credenciales y quien solo consulta.</p>
             </article>
             <article className="landing-cell">
               <h3>Tu marca</h3>
@@ -93,7 +93,7 @@ export function LandingPage() {
             </article>
             <article className="landing-cell">
               <h3>Tu tablero</h3>
-              <p>Consola con métricas, conversaciones, retroalimentación de clientes y auditoría de cada cambio en tu cuenta.</p>
+              <p>Consola con metricas, conversaciones, retroalimentacion de clientes y auditoria de cada cambio en tu cuenta.</p>
             </article>
           </div>
         </div>
@@ -105,25 +105,25 @@ export function LandingPage() {
             <div>
               <h2>Seguridad que no es promesa: es arquitectura</h2>
               <p className="landing-sub">
-                Cada práctica descrita aquí está implementada en nuestra plataforma y descrita en nuestra{' '}
-                <a href="/privacidad.html">política de privacidad</a>.
+                Cada practica descrita aqui esta implementada en nuestra plataforma y descrita en nuestra{' '}
+                <a href="/privacidad.html">politica de privacidad</a>.
               </p>
             </div>
             <div className="landing-sec-list">
               <SecurityItem title="Cifrado AES-256-GCM">
-                Credenciales y contenido de mensajes se almacenan cifrados, con rotación de llaves.
+                Credenciales y contenido de mensajes se almacenan cifrados, con rotacion de llaves.
               </SecurityItem>
               <SecurityItem title="Numeros protegidos">
-                Los teléfonos de tus clientes se almacenan como hashes con sal secreta, no en texto plano.
+                Los telefonos de tus clientes se almacenan como hashes con sal secreta, no en texto plano.
               </SecurityItem>
               <SecurityItem title="Derechos ARCO">
-                Acceso, rectificación y supresión de datos personales, con registro de auditoría de cada operación.
+                Acceso, rectificacion y supresion de datos personales, con registro de auditoria de cada operacion.
               </SecurityItem>
               <SecurityItem title="Retencion configurable">
-                Tú defines cuántos días se conservan las conversaciones de tu negocio.
+                Tu defines cuantos dias se conservan las conversaciones de tu negocio.
               </SecurityItem>
               <SecurityItem title="Protocolos de crisis">
-                Detección de situaciones sensibles con líneas de atención configurables por país.
+                Deteccion de situaciones sensibles con lineas de atencion configurables por pais.
               </SecurityItem>
             </div>
           </div>
@@ -135,10 +135,10 @@ export function LandingPage() {
           <h2>De cero a tu primer agente</h2>
           <p className="landing-sub">Sin instalar nada. Todo desde la consola de Whabo.</p>
           <div className="landing-steps">
-            <Step title="Crea tu cuenta">Registra tu negocio y obtén tu espacio aislado en la plataforma, con tu equipo y tus permisos.</Step>
+            <Step title="Crea tu cuenta">Registra tu negocio y obten tu espacio aislado en la plataforma, con tu equipo y tus permisos.</Step>
             <Step title="Configura tu agente">Define su personalidad, carga tu conocimiento y conecta la llave del modelo de IA que prefieras.</Step>
             <Step title="Conecta tu WhatsApp">
-              Vincula tu número de WhatsApp Business y tu agente empieza a atender. Tú supervisas todo desde la consola.
+              Vincula tu numero de WhatsApp Business y tu agente empieza a atender. Tu supervisas todo desde la consola.
             </Step>
           </div>
         </div>
@@ -148,9 +148,9 @@ export function LandingPage() {
         <div className="landing-wrap landing-contact">
           <div>
             <h2>Hablemos</h2>
-            <p className="landing-sub">Whabo está en acceso temprano. Escríbenos y te contactamos para configurar tu cuenta.</p>
-            <a className="landing-btn" href="mailto:hola@whabo.xyz?subject=Quiero%20probar%20Whabo">
-              Escribir a hola@whabo.xyz
+            <p className="landing-sub">Whabo esta en acceso temprano. Escribenos y te contactamos para configurar tu cuenta.</p>
+            <a className="landing-btn" href="mailto:contacto@amecrec.org?subject=Quiero%20probar%20Whabo">
+              Escribir a contacto@amecrec.org
             </a>
           </div>
           <dl className="landing-contact-card">
@@ -158,22 +158,22 @@ export function LandingPage() {
             <dd>Whabo - Plataforma de agentes conversacionales de WhatsApp</dd>
             <dt>Correo de contacto</dt>
             <dd>
-              <a href="mailto:hola@whabo.xyz">hola@whabo.xyz</a>
+              <a href="mailto:contacto@amecrec.org">contacto@amecrec.org</a>
             </dd>
             <dt>Responsable</dt>
-            <dd>[Tu nombre fiscal completo], persona física con actividad empresarial</dd>
-            <dt>Ubicación</dt>
-            <dd>Ciudad de México, México</dd>
+            <dd>Asociacion Mexicana</dd>
+            <dt>Ubicacion</dt>
+            <dd>Chihuahua, Mexico</dd>
           </dl>
         </div>
       </section>
 
       <footer className="landing-footer">
         <div className="landing-wrap landing-foot-in">
-          <span>© 2026 Whabo · whabo.xyz</span>
+          <span>&copy; 2026 Whabo &middot; whabo.xyz</span>
           <span>
-            <a href="/terminos.html">Términos de servicio</a>
-            <a href="/privacidad.html">Política de privacidad</a>
+            <a href="/terminos.html">Terminos y condiciones</a>
+            <a href="/privacidad.html">Politica de privacidad</a>
           </span>
         </div>
       </footer>
@@ -184,7 +184,7 @@ export function LandingPage() {
 function SecurityItem({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="landing-sec-item">
-      <span className="landing-mark">→</span>
+      <span className="landing-mark">-&gt;</span>
       <div>
         <b>{title}</b>
         <span>{children}</span>
