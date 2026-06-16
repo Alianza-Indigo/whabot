@@ -90,6 +90,19 @@ export interface PromptVersion {
   createdAt: string;
 }
 
+// Microsaas mode (per-bot). Lives inside Bot.identity.membership.
+export interface MembershipConfig {
+  enabled: boolean;
+  freeMessages?: number;
+  durationDays?: number;
+  price?: number;
+  currency?: string;
+  title?: string;
+  paywallMessage?: string;
+}
+
+export type BotIdentity = Record<string, unknown> & { membership?: MembershipConfig };
+
 export interface Bot {
   id: string;
   orgId: string;
@@ -97,7 +110,7 @@ export interface Bot {
   status: BotStatus;
   locale: string;
   systemPrompt?: string | null;
-  identity?: Record<string, unknown> | null;
+  identity?: BotIdentity | null;
   onboardingMsg?: string | null;
   historyWindow: number;
   llmProvider?: 'openai' | 'anthropic' | 'google' | 'mistral' | null;

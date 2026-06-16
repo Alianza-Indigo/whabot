@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/resources';
-import type { Bot, BotCommand, CrisisConfig } from '@/lib/types';
+import type { Bot, BotCommand, CrisisConfig, MembershipConfig } from '@/lib/types';
 import { compactJson, formatDate, parseJsonObject } from '@/lib/utils';
 
 const botSchema = z.object({
@@ -54,12 +54,22 @@ const commandSchema = z.object({
   payloadJson: z.string().min(2),
 });
 const crisisSchema = z.object({ configsJson: z.string().min(2) });
+const membershipSchema = z.object({
+  enabled: z.enum(['true', 'false']),
+  freeMessages: z.coerce.number().int().min(0),
+  durationDays: z.coerce.number().int().min(1),
+  price: z.coerce.number().min(0),
+  currency: z.string().min(3).max(3),
+  title: z.string().min(1),
+  paywallMessage: z.string().optional(),
+});
 
 type BotValues = z.infer<typeof botSchema>;
 type PromptValues = z.infer<typeof promptSchema>;
 type BrandingValues = z.infer<typeof brandingSchema>;
 type CommandValues = z.infer<typeof commandSchema>;
 type CrisisValues = z.infer<typeof crisisSchema>;
+type MembershipValues = z.infer<typeof membershipSchema>;
 
 export function BotsPage() {
   const queryClient = useQueryClient();
@@ -103,6 +113,10 @@ export function BotsPage() {
   const brandingForm = useForm<BrandingValues>({
     resolver: zodResolver(brandingSchema),
     values: selectedBot?.branding ?? {},
+  });
+  const membershipForm = useForm<MembershipValues>({
+    resolver: zodResolver(membershipSchema),
+    values: toMembershipValues(selectedBot),
   });
   const commandForm = useForm<CommandValues>({
     resolver: zodResolver(commandSchema),
@@ -151,6 +165,23 @@ export function BotsPage() {
   });
   const updateBranding = useMutation({
     mutationFn: (values: BrandingValues) => api.updateBranding(selectedBotId!, values),
+    onSuccess: invalidateBot,
+  });
+  const updateMembership = useMutation({
+    // Merge into identity so other keys (e.g. collectFeedback) are preserved.
+    mutationFn: (values: MembershipValues) => {
+      const membership: MembershipConfig = {
+        enabled: values.enabled === 'true',
+        freeMessages: values.freeMessages,
+        durationDays: values.durationDays,
+        price: values.price,
+        currency: values.currency,
+        title: values.title,
+        ...(values.paywallMessage ? { paywallMessage: values.paywallMessage } : {}),
+      };
+      const identity = { ...(selectedBot?.identity ?? {}), membership };
+      return api.updateBot(selectedBotId!, { identity });
+    },
     onSuccess: invalidateBot,
   });
   const createCommand = useMutation({
@@ -287,6 +318,58 @@ export function BotsPage() {
               </>
             ) : (
               <EmptyState title="Sin agente seleccionado" />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-5">
+        <Card>
+          <CardHeader><CardTitle>Membresía / Microsaas</CardTitle></CardHeader>
+          <CardContent>
+            {selectedBot ? (
+              <form className="space-y-4" onSubmit={membershipForm.handleSubmit((values) => updateMembership.mutate(values))}>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <div>
+                    <label className="field-label">Modo</label>
+                    <Select {...membershipForm.register('enabled')}>
+                      <option value="false">Tradicional (sin paywall)</option>
+                      <option value="true">Microsaas (free + membresía)</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="field-label">Mensajes gratis (de por vida)</label>
+                    <Input type="number" min={0} {...membershipForm.register('freeMessages')} />
+                  </div>
+                  <div>
+                    <label className="field-label">Duración membresía (días)</label>
+                    <Input type="number" min={1} {...membershipForm.register('durationDays')} />
+                  </div>
+                  <div>
+                    <label className="field-label">Precio</label>
+                    <Input type="number" min={0} step="0.01" {...membershipForm.register('price')} />
+                  </div>
+                  <div>
+                    <label className="field-label">Moneda (ISO, ej. MXN)</label>
+                    <Input {...membershipForm.register('currency')} />
+                  </div>
+                  <div>
+                    <label className="field-label">Título (checkout)</label>
+                    <Input {...membershipForm.register('title')} />
+                  </div>
+                  <div className="md:col-span-2 xl:col-span-3">
+                    <label className="field-label">Mensaje de paywall (opcional)</label>
+                    <Textarea rows={2} {...membershipForm.register('paywallMessage')} />
+                  </div>
+                </div>
+                <p className="field-help">
+                  Requiere una integración <code>payments</code> / <code>mercadopago</code> (pestaña Providers) para generar el link de pago. La activación es por usuario final tras pagar.
+                </p>
+                <Button disabled={updateMembership.isPending} type="submit"><Save className="h-4 w-4" /> Guardar membresía</Button>
+                {updateMembership.isError ? <ErrorState error={updateMembership.error} /> : null}
+              </form>
+            ) : (
+              <EmptyState title="Selecciona un agente" />
             )}
           </CardContent>
         </Card>
@@ -455,6 +538,19 @@ function toBotFormValues(bot: Bot): BotValues {
     safetyLevel: bot.safetyLevel,
     identityJson: compactJson(bot.identity ?? {}),
     llmParamsJson: compactJson(bot.llmParams ?? {}),
+  };
+}
+
+function toMembershipValues(bot?: Bot): MembershipValues {
+  const m: Partial<MembershipConfig> = bot?.identity?.membership ?? {};
+  return {
+    enabled: m.enabled ? 'true' : 'false',
+    freeMessages: m.freeMessages ?? 10,
+    durationDays: m.durationDays ?? 30,
+    price: m.price ?? 0,
+    currency: m.currency ?? 'MXN',
+    title: m.title ?? 'Membresía',
+    paywallMessage: m.paywallMessage ?? '',
   };
 }
 

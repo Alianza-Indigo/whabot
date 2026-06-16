@@ -200,11 +200,15 @@ export function ProvidersPage() {
                 <Select {...integrationForm.register('kind')}>
                   <option value="stt">stt</option>
                   <option value="embeddings">embeddings</option>
+                  <option value="payments">payments</option>
                 </Select>
                 <Input placeholder="provider" {...integrationForm.register('provider')} />
                 <Input type="password" autoComplete="off" placeholder="api key" {...integrationForm.register('apiKey')} />
                 <Button disabled={!botId || createIntegration.isPending} type="submit"><Plus className="h-4 w-4" /> Crear</Button>
               </form>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Para cobros (modo microsaas) usa kind <code>payments</code>, provider <code>mercadopago</code> y como api key el <strong>Access Token</strong> de Mercado Pago.
+              </p>
               {createIntegration.isError ? <div className="mt-3"><ErrorState error={createIntegration.error} /></div> : null}
             </CardContent>
           </Card>
