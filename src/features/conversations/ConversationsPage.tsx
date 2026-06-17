@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MessageSquareText, ShieldAlert, Star, Users } from 'lucide-react';
+import { CreditCard, MessageSquareText, ShieldAlert, Star, Users } from 'lucide-react';
 import { BotPicker } from '@/components/common/BotPicker';
 import { DataTable } from '@/components/common/DataTable';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -11,14 +11,16 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { api } from '@/lib/resources';
-import type { CrisisEvent, EndUser, Feedback } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import type { Bot, CrisisEvent, EndUser, Feedback, Payment } from '@/lib/types';
+import { formatCurrency, formatDate } from '@/lib/utils';
 
 export function ConversationsPage() {
   const botsQuery = useQuery({ queryKey: ['bots'], queryFn: api.bots });
   const [botId, setBotId] = useState('');
   const [pausedFilter, setPausedFilter] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<string>('');
   const paused = pausedFilter === '' ? undefined : pausedFilter === 'true';
+
   const usersQuery = useQuery({ queryKey: ['users', botId, paused], queryFn: () => api.users(botId, paused), enabled: Boolean(botId) });
   const crisisQuery = useQuery({ queryKey: ['crisis-events', botId], queryFn: () => api.crisisEvents(botId, 50), enabled: Boolean(botId) });
   const feedbackQuery = useQuery({ queryKey: ['feedback', botId], queryFn: () => api.feedback(botId, 100), enabled: Boolean(botId) });
@@ -28,15 +30,36 @@ export function ConversationsPage() {
     if (!botId && botsQuery.data?.[0]) setBotId(botsQuery.data[0].id);
   }, [botId, botsQuery.data]);
 
+  const selectedBot = useMemo<Bot | undefined>(() => botsQuery.data?.find((bot) => bot.id === botId), [botId, botsQuery.data]);
+  const membershipEnabled = selectedBot?.identity?.membership?.enabled === true;
+
+  const paymentsQuery = useQuery({
+    queryKey: ['payments', botId, paymentStatus],
+    queryFn: () =>
+      api.payments(botId, {
+        status: paymentStatus === '' ? undefined : paymentStatus as Payment['status'],
+        limit: 100,
+      }),
+    enabled: Boolean(botId) && membershipEnabled,
+  });
+
+  const users = usersQuery.data ?? [];
+  const payments = paymentsQuery.data ?? [];
+  const activeMembers = users.filter((user) => user.membershipUntil && new Date(user.membershipUntil).getTime() > Date.now()).length;
+  const approvedPayments = payments.filter((payment) => payment.status === 'approved').length;
+
   const userColumns = useMemo(
     () => [
       { key: 'id', header: 'Usuario final', render: (row: EndUser) => <span className="font-mono text-xs">{row.id}</span> },
       { key: 'locale', header: 'Locale', render: (row: EndUser) => row.locale ?? 'n/a' },
       { key: 'paused', header: 'Estado', render: (row: EndUser) => <StatusBadge status={row.paused ? 'paused' : 'active'} /> },
+      { key: 'freeMsgUsed', header: 'Gratis usados', render: (row: EndUser) => row.freeMsgUsed ?? 0 },
+      { key: 'membershipUntil', header: 'Membresia', render: (row: EndUser) => (row.membershipUntil ? formatDate(row.membershipUntil) : 'Sin membresia') },
       { key: 'createdAt', header: 'Creado', render: (row: EndUser) => formatDate(row.createdAt) },
     ],
     [],
   );
+
   const crisisColumns = useMemo(
     () => [
       { key: 'category', header: 'Categoria', render: (row: CrisisEvent) => row.category },
@@ -45,6 +68,7 @@ export function ConversationsPage() {
     ],
     [],
   );
+
   const feedbackColumns = useMemo(
     () => [
       { key: 'rating', header: 'Rating', render: (row: Feedback) => `${row.rating}/5` },
@@ -54,18 +78,51 @@ export function ConversationsPage() {
     [],
   );
 
+  const paymentColumns = useMemo(
+    () => [
+      { key: 'endUserId', header: 'Usuario', render: (row: Payment) => <span className="font-mono text-xs">{row.endUserId}</span> },
+      { key: 'status', header: 'Estado', render: (row: Payment) => <StatusBadge status={row.status} /> },
+      { key: 'amount', header: 'Monto', render: (row: Payment) => (row.amount == null ? 'Sin monto' : formatCurrency(row.amount, row.currency ?? 'MXN')) },
+      { key: 'provider', header: 'Provider', render: (row: Payment) => row.provider },
+      { key: 'paidAt', header: 'Pagado', render: (row: Payment) => (row.paidAt ? formatDate(row.paidAt) : 'Pendiente') },
+      { key: 'createdAt', header: 'Creado', render: (row: Payment) => formatDate(row.createdAt) },
+    ],
+    [],
+  );
+
   return (
     <>
       <PageHeader
         title="Conversaciones"
-        description="El API actual expone usuarios finales, feedback y eventos de crisis; no expone listado de conversaciones ni mensajes operativos."
+        description="Vista operativa de usuarios finales, membresias, pagos, feedback y eventos de crisis por agente."
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <MetricCard title="Usuarios finales" value={usersQuery.data?.length ?? 0} icon={Users} />
-        <MetricCard title="Feedback" value={feedbackStatsQuery.data?.count ?? 0} icon={Star} detail={feedbackStatsQuery.data?.average ? `Promedio ${feedbackStatsQuery.data.average}` : 'Sin promedio'} />
-        <MetricCard title="Crisis events" value={crisisQuery.data?.length ?? 0} icon={ShieldAlert} tone={(crisisQuery.data?.length ?? 0) > 0 ? 'warning' : 'success'} />
-        <MetricCard title="Mensajes" value="TODO API" icon={MessageSquareText} />
+      <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-5">
+        <MetricCard title="Usuarios finales" value={users.length} icon={Users} />
+        <MetricCard
+          title="Miembros activos"
+          value={membershipEnabled ? activeMembers : 'N/A'}
+          icon={CreditCard}
+          detail={membershipEnabled ? 'Con vigencia activa' : 'Microsaas desactivado'}
+        />
+        <MetricCard
+          title="Pagos aprobados"
+          value={membershipEnabled ? approvedPayments : 'N/A'}
+          icon={MessageSquareText}
+          detail={membershipEnabled ? 'Ultimos 100 registros' : 'Microsaas desactivado'}
+        />
+        <MetricCard
+          title="Feedback"
+          value={feedbackStatsQuery.data?.count ?? 0}
+          icon={Star}
+          detail={feedbackStatsQuery.data?.average ? `Promedio ${feedbackStatsQuery.data.average}` : 'Sin promedio'}
+        />
+        <MetricCard
+          title="Crisis events"
+          value={crisisQuery.data?.length ?? 0}
+          icon={ShieldAlert}
+          tone={(crisisQuery.data?.length ?? 0) > 0 ? 'warning' : 'success'}
+        />
       </div>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
@@ -81,22 +138,54 @@ export function ConversationsPage() {
                 <option value="true">pausados</option>
               </Select>
             </div>
+            {membershipEnabled ? (
+              <div>
+                <label className="field-label">Estado del pago</label>
+                <Select value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value)}>
+                  <option value="">todos</option>
+                  <option value="approved">aprobados</option>
+                  <option value="pending">pendientes</option>
+                  <option value="rejected">rechazados</option>
+                </Select>
+              </div>
+            ) : null}
             <EmptyState
-              title="Detalle de conversacion no disponible"
-              description="TODO API: falta endpoint para conversaciones, mensajes por conversacion, provider usado y safety result. No se usa export ARCO como sustituto operativo."
+              title={membershipEnabled ? 'Microsaas visible por agente' : 'Detalle de conversacion no disponible'}
+              description={
+                membershipEnabled
+                  ? 'Esta vista ya muestra consumo gratis, vigencia y pagos. La bandeja operativa y mensajes por conversacion quedarian para CRM/handoff.'
+                  : 'TODO API: falta endpoint para conversaciones, mensajes por conversacion, provider usado y safety result. No se usa export ARCO como sustituto operativo.'
+              }
             />
           </CardContent>
         </Card>
 
         <DataTable
           columns={userColumns}
-          data={usersQuery.data ?? []}
+          data={users}
           getRowKey={(row) => row.id}
           empty={<EmptyState title="Sin usuarios finales" description="Todavia no hay sujetos conversacionales para este agente." />}
         />
       </div>
 
       {usersQuery.isError ? <div className="mt-4"><ErrorState error={usersQuery.error} /></div> : null}
+
+      {membershipEnabled ? (
+        <div className="mt-5">
+          <Card>
+            <CardHeader><CardTitle>Pagos de membresia</CardTitle></CardHeader>
+            <CardContent>
+              <DataTable
+                columns={paymentColumns}
+                data={payments}
+                getRowKey={(row) => row.id}
+                empty={<EmptyState title="Sin pagos" description="Todavia no hay pagos registrados para este agente." />}
+              />
+            </CardContent>
+          </Card>
+          {paymentsQuery.isError ? <div className="mt-4"><ErrorState error={paymentsQuery.error} /></div> : null}
+        </div>
+      ) : null}
 
       <div className="mt-5 grid gap-4 xl:grid-cols-2">
         <Card>

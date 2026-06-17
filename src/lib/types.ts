@@ -161,7 +161,21 @@ export interface EndUser {
   locale?: string | null;
   paused: boolean;
   consentDeclined?: boolean;
+  freeMsgUsed?: number;
+  membershipUntil?: string | null;
   createdAt: string;
+}
+
+export interface Payment {
+  id: string;
+  botId: string;
+  endUserId: string;
+  provider: string;
+  status: 'pending' | 'approved' | 'rejected';
+  amount?: number | null;
+  currency?: string | null;
+  createdAt: string;
+  paidAt?: string | null;
 }
 
 export interface CrisisEvent {

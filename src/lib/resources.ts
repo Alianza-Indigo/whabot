@@ -17,6 +17,7 @@ import type {
   LoginResponse,
   OrgMember,
   Organization,
+  Payment,
   PromptVersion,
   RegisterResponse,
 } from './types';
@@ -103,6 +104,8 @@ export const api = {
 
   users: (botId: string, paused?: boolean) =>
     apiRequest<EndUser[]>(`/admin/bots/${botId}/users${queryString({ paused })}`),
+  payments: (botId: string, params: { status?: Payment['status']; endUserId?: string; limit?: number } = {}) =>
+    apiRequest<Payment[]>(`/admin/bots/${botId}/payments${queryString(params)}`),
   patchUser: (botId: string, userId: string, paused: boolean) =>
     apiRequest<{ id: string; paused: boolean }>(`/admin/bots/${botId}/users/${userId}`, { method: 'PATCH', body: JSON.stringify({ paused }) }),
   exportUser: (botId: string, userId: string) =>

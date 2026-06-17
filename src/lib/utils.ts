@@ -19,6 +19,14 @@ export function formatNumber(value?: number | null) {
   return new Intl.NumberFormat('es-MX').format(value ?? 0);
 }
 
+export function formatCurrency(value?: number | null, currency = 'MXN') {
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(value ?? 0);
+}
+
 export function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
 }
