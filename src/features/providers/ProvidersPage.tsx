@@ -20,6 +20,21 @@ import { Select } from '@/components/ui/select';
 import { api } from '@/lib/resources';
 import type { Integration } from '@/lib/types';
 
+const INTEGRATION_PROVIDER_OPTIONS = {
+  stt: [
+    { value: 'openai_whisper', label: 'openai_whisper' },
+    { value: 'whisper', label: 'whisper' },
+  ],
+  embeddings: [
+    { value: 'openai', label: 'openai' },
+  ],
+  payments: [
+    { value: 'mercadopago', label: 'mercadopago' },
+  ],
+} as const;
+
+type IntegrationKind = keyof typeof INTEGRATION_PROVIDER_OPTIONS;
+
 const llmSchema = z.object({
   llmProvider: z.enum(['openai', 'anthropic', 'google', 'mistral']),
   llmModel: z.string().min(1),
@@ -40,6 +55,10 @@ const integrationUpdateSchema = z.object({
 type LlmValues = z.infer<typeof llmSchema>;
 type IntegrationValues = z.infer<typeof integrationSchema>;
 type IntegrationUpdateValues = z.infer<typeof integrationUpdateSchema>;
+
+function defaultProviderForKind(kind: IntegrationKind) {
+  return INTEGRATION_PROVIDER_OPTIONS[kind][0].value;
+}
 
 export function ProvidersPage() {
   const queryClient = useQueryClient();
@@ -63,12 +82,14 @@ export function ProvidersPage() {
   });
   const integrationForm = useForm<IntegrationValues>({
     resolver: zodResolver(integrationSchema),
-    defaultValues: { kind: 'stt', provider: 'openai', apiKey: '' },
+    defaultValues: { kind: 'stt', provider: defaultProviderForKind('stt'), apiKey: '' },
   });
   const integrationUpdateForm = useForm<IntegrationUpdateValues>({
     resolver: zodResolver(integrationUpdateSchema),
     values: { status: selectedIntegration?.status === 'active' ? 'active' : 'inactive', apiKey: '' },
   });
+  const selectedKind = integrationForm.watch('kind') as IntegrationKind;
+  const providerOptions = INTEGRATION_PROVIDER_OPTIONS[selectedKind] ?? INTEGRATION_PROVIDER_OPTIONS.stt;
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['bots'] });
@@ -83,7 +104,7 @@ export function ProvidersPage() {
   const createIntegration = useMutation({
     mutationFn: (values: IntegrationValues) => api.createIntegration(botId, values),
     onSuccess: () => {
-      integrationForm.reset({ kind: 'stt', provider: 'openai', apiKey: '' });
+      integrationForm.reset({ kind: 'stt', provider: defaultProviderForKind('stt'), apiKey: '' });
       invalidate();
     },
   });
@@ -127,6 +148,13 @@ export function ProvidersPage() {
     ],
     [deleteIntegration],
   );
+
+  useEffect(() => {
+    const currentProvider = integrationForm.getValues('provider');
+    if (!providerOptions.some((option) => option.value === currentProvider)) {
+      integrationForm.setValue('provider', providerOptions[0].value, { shouldValidate: true });
+    }
+  }, [integrationForm, providerOptions, selectedKind]);
 
   return (
     <>
@@ -202,7 +230,13 @@ export function ProvidersPage() {
                   <option value="embeddings">embeddings</option>
                   <option value="payments">payments</option>
                 </Select>
-                <Input placeholder="provider" {...integrationForm.register('provider')} />
+                <Select {...integrationForm.register('provider')}>
+                  {providerOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
                 <Input type="password" autoComplete="off" placeholder="api key" {...integrationForm.register('apiKey')} />
                 <Button disabled={!botId || createIntegration.isPending} type="submit"><Plus className="h-4 w-4" /> Crear</Button>
               </form>
