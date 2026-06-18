@@ -15,16 +15,37 @@ import type { Bot, CrisisEvent, EndUser, Feedback, Payment } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 export function ConversationsPage() {
+  const LIVE_REFETCH_MS = 15000;
   const botsQuery = useQuery({ queryKey: ['bots'], queryFn: api.bots });
   const [botId, setBotId] = useState('');
   const [pausedFilter, setPausedFilter] = useState<string>('');
   const [paymentStatus, setPaymentStatus] = useState<string>('');
   const paused = pausedFilter === '' ? undefined : pausedFilter === 'true';
 
-  const usersQuery = useQuery({ queryKey: ['users', botId, paused], queryFn: () => api.users(botId, paused), enabled: Boolean(botId) });
-  const crisisQuery = useQuery({ queryKey: ['crisis-events', botId], queryFn: () => api.crisisEvents(botId, 50), enabled: Boolean(botId) });
-  const feedbackQuery = useQuery({ queryKey: ['feedback', botId], queryFn: () => api.feedback(botId, 100), enabled: Boolean(botId) });
-  const feedbackStatsQuery = useQuery({ queryKey: ['feedback-stats', botId], queryFn: () => api.feedbackStats(botId), enabled: Boolean(botId) });
+  const usersQuery = useQuery({
+    queryKey: ['users', botId, paused],
+    queryFn: () => api.users(botId, paused),
+    enabled: Boolean(botId),
+    refetchInterval: LIVE_REFETCH_MS,
+  });
+  const crisisQuery = useQuery({
+    queryKey: ['crisis-events', botId],
+    queryFn: () => api.crisisEvents(botId, 50),
+    enabled: Boolean(botId),
+    refetchInterval: LIVE_REFETCH_MS,
+  });
+  const feedbackQuery = useQuery({
+    queryKey: ['feedback', botId],
+    queryFn: () => api.feedback(botId, 100),
+    enabled: Boolean(botId),
+    refetchInterval: LIVE_REFETCH_MS,
+  });
+  const feedbackStatsQuery = useQuery({
+    queryKey: ['feedback-stats', botId],
+    queryFn: () => api.feedbackStats(botId),
+    enabled: Boolean(botId),
+    refetchInterval: LIVE_REFETCH_MS,
+  });
 
   useEffect(() => {
     if (!botId && botsQuery.data?.[0]) setBotId(botsQuery.data[0].id);
@@ -41,6 +62,7 @@ export function ConversationsPage() {
         limit: 100,
       }),
     enabled: Boolean(botId) && membershipEnabled,
+    refetchInterval: LIVE_REFETCH_MS,
   });
 
   const users = usersQuery.data ?? [];

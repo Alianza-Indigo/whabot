@@ -27,6 +27,7 @@ const rectifySchema = z.object({
 type RectifyValues = z.infer<typeof rectifySchema>;
 
 export function CompliancePage() {
+  const LIVE_REFETCH_MS = 15000;
   const queryClient = useQueryClient();
   const botsQuery = useQuery({ queryKey: ['bots'], queryFn: api.bots });
   const [botId, setBotId] = useState('');
@@ -34,7 +35,12 @@ export function CompliancePage() {
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<EndUser | null>(null);
   const paused = pausedFilter === '' ? undefined : pausedFilter === 'true';
-  const usersQuery = useQuery({ queryKey: ['users', botId, paused], queryFn: () => api.users(botId, paused), enabled: Boolean(botId) });
+  const usersQuery = useQuery({
+    queryKey: ['users', botId, paused],
+    queryFn: () => api.users(botId, paused),
+    enabled: Boolean(botId),
+    refetchInterval: LIVE_REFETCH_MS,
+  });
   const exportUser = useMutation({ mutationFn: (userId: string) => api.exportUser(botId, userId) });
   const form = useForm<RectifyValues>({ resolver: zodResolver(rectifySchema), values: { locale: selectedUser?.locale ?? '' } });
 
