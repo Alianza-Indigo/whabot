@@ -24,6 +24,8 @@ const knowledgeSchema = z.object({
   content: z.string().min(1).max(50_000),
   tagsText: z.string().optional(),
 });
+const INTERNAL_TAG_PREFIX = '__';
+const IMPORT_SOURCE_TAG_PREFIX = `${INTERNAL_TAG_PREFIX}source:`;
 
 type KnowledgeValues = z.infer<typeof knowledgeSchema>;
 
@@ -61,7 +63,7 @@ export function KnowledgePage() {
     values: {
       title: selectedItem?.title ?? '',
       content: selectedItem?.content ?? '',
-      tagsText: selectedItem?.tags?.join(', ') ?? '',
+      tagsText: getEditableKnowledgeTags(selectedItem?.tags).join(', '),
     },
   });
 
@@ -74,7 +76,7 @@ export function KnowledgePage() {
     },
   });
   const updateKnowledge = useMutation({
-    mutationFn: (values: KnowledgeValues) => api.updateKnowledge(botId, selectedItem!.id, toPayload(values)),
+    mutationFn: (values: KnowledgeValues) => api.updateKnowledge(botId, selectedItem!.id, toPayload(values, getHiddenKnowledgeTags(selectedItem?.tags))),
     onSuccess: (item) => {
       setSelectedItem(item);
       invalidate();
@@ -82,6 +84,17 @@ export function KnowledgePage() {
   });
   const deleteKnowledge = useMutation({
     mutationFn: (itemId: string) => api.deleteKnowledge(botId, itemId),
+    onSuccess: () => {
+      setSelectedItem(null);
+      invalidate();
+    },
+  });
+  const deleteImport = useMutation({
+    mutationFn: async (itemIds: string[]) => {
+      for (const itemId of itemIds) {
+        await api.deleteKnowledge(botId, itemId);
+      }
+    },
     onSuccess: () => {
       setSelectedItem(null);
       invalidate();
@@ -102,11 +115,12 @@ export function KnowledgePage() {
 
   const items = knowledgeQuery.data ?? [];
   const embedded = items.filter((item) => item.hasEmbedding).length;
+  const importedSources = useMemo(() => groupImportedKnowledge(items), [items]);
   const columns = useMemo(
     () => [
       { key: 'title', header: 'Documento', render: (item: KnowledgeItem) => <button className="font-medium text-primary hover:underline" onClick={() => setSelectedItem(item)}>{item.title}</button> },
       { key: 'embedding', header: 'Embedding', render: (item: KnowledgeItem) => <StatusBadge status={item.hasEmbedding} /> },
-      { key: 'tags', header: 'Tags', render: (item: KnowledgeItem) => item.tags?.join(', ') || 'sin tags' },
+      { key: 'tags', header: 'Tags', render: (item: KnowledgeItem) => getVisibleKnowledgeTags(item.tags).join(', ') || 'sin tags' },
       { key: 'content', header: 'Contenido', render: (item: KnowledgeItem) => <span className="line-clamp-2 max-w-lg text-muted-foreground">{item.content}</span> },
       {
         key: 'actions',
@@ -139,10 +153,11 @@ export function KnowledgePage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <MetricCard title="Items" value={items.length} icon={DatabaseZap} />
         <MetricCard title="Con embedding" value={`${embedded}/${items.length}`} />
         <MetricCard title="Pendientes" value={items.length - embedded} tone={items.length - embedded ? 'warning' : 'success'} />
+        <MetricCard title="Importaciones" value={importedSources.length} />
       </div>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
@@ -187,12 +202,42 @@ export function KnowledgePage() {
           </CardContent>
         </Card>
 
-        <DataTable
-          columns={columns}
-          data={items}
-          getRowKey={(item) => item.id}
-          empty={<EmptyState title="Knowledge vacio" description="Agrega contenido textual para que el bot lo recupere durante la conversacion." />}
-        />
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Importaciones</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {importedSources.length ? importedSources.map((source) => (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3" key={source.id}>
+                  <div className="space-y-1">
+                    <div className="font-medium">{source.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {source.itemCount} chunks, {source.embeddedCount} con embedding
+                    </div>
+                  </div>
+                  <ConfirmDialog
+                    title="Eliminar importacion"
+                    description="Se eliminaran todos los chunks creados por este archivo."
+                    confirmLabel="Eliminar"
+                    destructive
+                    onConfirm={() => deleteImport.mutateAsync(source.itemIds)}
+                  >
+                    <Button disabled={deleteImport.isPending} size="sm" type="button" variant="outline">
+                      <Trash2 className="h-4 w-4" /> Eliminar archivo
+                    </Button>
+                  </ConfirmDialog>
+                </div>
+              )) : <EmptyState title="Sin importaciones" description="Los archivos que subas aqui quedaran agrupados para administrarlos mejor." />}
+              {deleteImport.isError ? <ErrorState error={deleteImport.error} /> : null}
+            </CardContent>
+          </Card>
+
+          <DataTable
+            columns={columns}
+            data={items}
+            getRowKey={(item) => item.id}
+            empty={<EmptyState title="Knowledge vacio" description="Agrega contenido textual para que el bot lo recupere durante la conversacion." />}
+          />
+        </div>
       </div>
 
       {knowledgeQuery.isError ? <div className="mt-4"><ErrorState error={knowledgeQuery.error} /></div> : null}
@@ -243,10 +288,48 @@ function KnowledgeForm({
   );
 }
 
-function toPayload(values: KnowledgeValues) {
+function toPayload(values: KnowledgeValues, hiddenTags: string[] = []) {
   return {
     title: values.title,
     content: values.content,
-    tags: values.tagsText?.split(',').map((tag) => tag.trim()).filter(Boolean) ?? [],
+    tags: [
+      ...(values.tagsText?.split(',').map((tag) => tag.trim()).filter(Boolean) ?? []),
+      ...hiddenTags,
+    ],
   };
+}
+
+function getVisibleKnowledgeTags(tags?: string[]) {
+  return (tags ?? []).filter((tag) => !tag.startsWith(INTERNAL_TAG_PREFIX));
+}
+
+function getEditableKnowledgeTags(tags?: string[]) {
+  return getVisibleKnowledgeTags(tags);
+}
+
+function getHiddenKnowledgeTags(tags?: string[]) {
+  return (tags ?? []).filter((tag) => tag.startsWith(INTERNAL_TAG_PREFIX));
+}
+
+function groupImportedKnowledge(items: KnowledgeItem[]) {
+  const grouped = new Map<string, { id: string; title: string; itemIds: string[]; itemCount: number; embeddedCount: number }>();
+  for (const item of items) {
+    const sourceId = item.tags?.find((tag) => tag.startsWith(IMPORT_SOURCE_TAG_PREFIX))?.slice(IMPORT_SOURCE_TAG_PREFIX.length);
+    if (!sourceId) continue;
+    const existing = grouped.get(sourceId);
+    if (existing) {
+      existing.itemIds.push(item.id);
+      existing.itemCount += 1;
+      existing.embeddedCount += item.hasEmbedding ? 1 : 0;
+      continue;
+    }
+    grouped.set(sourceId, {
+      id: sourceId,
+      title: item.title.replace(/ \(\d+\/\d+\)$/, ''),
+      itemIds: [item.id],
+      itemCount: 1,
+      embeddedCount: item.hasEmbedding ? 1 : 0,
+    });
+  }
+  return Array.from(grouped.values()).sort((a, b) => a.title.localeCompare(b.title, 'es'));
 }
