@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bot as BotIcon, History, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
+import { Bot as BotIcon, DatabaseZap, History, Plus, RotateCcw, Save, ShieldCheck, Smartphone, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -21,7 +21,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/resources';
 import type { Bot, BotCommand, CrisisConfig, MembershipConfig } from '@/lib/types';
-import { compactJson, formatDate, parseJsonObject } from '@/lib/utils';
+import { compactJson, formatDate, formatNumber, parseJsonObject } from '@/lib/utils';
 
 const botSchema = z.object({
   orgId: z.string().optional(),
@@ -83,6 +83,10 @@ export function BotsPage() {
 
   const bots = useMemo(() => botsQuery.data ?? [], [botsQuery.data]);
   const selectedBot = botQuery.data;
+  const selectedChannels = selectedBot?.channels?.length ?? 0;
+  const connectedChannels = selectedBot?.channels?.filter((channel) => channel.status === 'connected').length ?? 0;
+  const selectedKnowledgeCount = selectedBot?.knowledge?.length ?? 0;
+  const membershipEnabled = Boolean(selectedBot?.identity?.membership?.enabled);
 
   useEffect(() => {
     if (!selectedBotId && bots[0]) setSelectedBotId(bots[0].id);
@@ -224,7 +228,7 @@ export function BotsPage() {
     <>
       <PageHeader
         title="Bots / Agentes"
-        description="Configuracion operativa de agentes WhatsApp: LLM, safety, prompt versionado, branding, commands y crisis config."
+        description="Configura agentes, providers, prompts, branding, comandos y modos de operacion desde una vista mas legible."
         actions={
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
@@ -239,21 +243,93 @@ export function BotsPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <MetricCard title="Agentes" value={bots.length} icon={BotIcon} />
-        <MetricCard title="Activos" value={bots.filter((bot) => bot.status === 'active').length} />
+        <MetricCard title="Activos" value={bots.filter((bot) => bot.status === 'active').length} icon={ShieldCheck} />
         <MetricCard title="Credential error" value={bots.filter((bot) => bot.status === 'credential_error').length} tone={bots.some((bot) => bot.status === 'credential_error') ? 'danger' : 'success'} />
         <MetricCard title="Prompt versions" value={promptsQuery.data?.length ?? 0} icon={History} />
+        <MetricCard title="Canales conectados" value={`${connectedChannels}/${selectedChannels}`} icon={Smartphone} detail={selectedBot ? selectedBot.name : 'Sin seleccion'} />
       </div>
 
-      <div className="mt-5">
-        <DataTable
-          columns={botColumns}
-          data={bots}
-          getRowKey={(bot) => bot.id}
-          empty={<EmptyState title="Sin agentes" description="Crea un agente para configurar canales, knowledge y credenciales BYO." />}
-        />
-        {botsQuery.isError ? <div className="mt-4"><ErrorState error={botsQuery.error} /></div> : null}
+      <div className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <div>
+          <DataTable
+            columns={botColumns}
+            data={bots}
+            getRowKey={(bot) => bot.id}
+            empty={<EmptyState title="Sin agentes" description="Crea un agente para configurar canales, knowledge y credenciales BYO." />}
+          />
+          {botsQuery.isError ? <div className="mt-4"><ErrorState error={botsQuery.error} /></div> : null}
+        </div>
+
+        <Card>
+          <CardHeader><CardTitle>Agente seleccionado</CardTitle></CardHeader>
+          <CardContent>
+            {selectedBot ? (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-semibold">{selectedBot.name}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Actualizado {formatDate(selectedBot.updatedAt)}</p>
+                  </div>
+                  <StatusBadge status={selectedBot.status} />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Provider</p>
+                    <p className="mt-2 text-base font-semibold">{selectedBot.llmProvider ?? 'Sin definir'}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{selectedBot.llmModel ?? 'Modelo pendiente'}</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Safety</p>
+                    <p className="mt-2 text-base font-semibold">{selectedBot.safetyLevel}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{selectedBot.locale}</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Knowledge</p>
+                    <p className="mt-2 text-base font-semibold">{selectedKnowledgeCount}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Bloques ligados al agente</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Membresia</p>
+                    <p className="mt-2 text-base font-semibold">{membershipEnabled ? 'Activa' : 'Tradicional'}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Modo comercial del bot</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs uppercase text-muted-foreground">Canales</p>
+                      <Smartphone className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="mt-2 text-xl font-semibold">{formatNumber(selectedChannels)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatNumber(connectedChannels)} conectados</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs uppercase text-muted-foreground">Prompts</p>
+                      <History className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="mt-2 text-xl font-semibold">{formatNumber(promptsQuery.data?.length ?? 0)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Versiones registradas</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs uppercase text-muted-foreground">LLM key</p>
+                      <DatabaseZap className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="mt-2 text-xl font-semibold">{selectedBot.llmApiKeySet ? 'Lista' : 'Pendiente'}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Credencial cifrada</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <EmptyState title="Selecciona un agente" description="Aqui veras un resumen rapido antes de tocar configuracion y prompts." />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">

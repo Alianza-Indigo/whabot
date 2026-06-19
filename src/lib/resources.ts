@@ -20,6 +20,7 @@ import type {
   OrgMember,
   Organization,
   Payment,
+  PlatformSummary,
   PromptVersion,
   RegisterResponse,
 } from './types';
@@ -34,6 +35,7 @@ export const api = {
     apiRequest<RegisterResponse>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
 
   organizations: () => apiRequest<Organization[]>('/admin/organizations'),
+  platformSummary: () => apiRequest<PlatformSummary>('/admin/platform/summary'),
   organization: (id: string) => apiRequest<Organization>(`/admin/organizations/${id}`),
   createOrganization: (body: Partial<Organization> & { sentryDsn?: string }) =>
     apiRequest<Organization>('/admin/organizations', { method: 'POST', body: JSON.stringify(body) }),

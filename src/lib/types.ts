@@ -248,3 +248,83 @@ export interface PromMetric {
   labels: Record<string, string>;
   value: number;
 }
+
+export interface PlatformMetricBreakdown {
+  name: string;
+  value: number;
+}
+
+export interface PlatformTopUsageOrganization {
+  id: string;
+  name: string;
+  used: number;
+}
+
+export interface PlatformOrganizationRow {
+  id: string;
+  name: string;
+  plan: OrgPlan;
+  createdAt: string;
+  botCount: number;
+  activeBotCount: number;
+  credentialErrorCount: number;
+  channelCount: number;
+  connectedChannelCount: number;
+  msgUsed: number;
+  msgQuota: number;
+  usageRate: number | null;
+  isOperating: boolean;
+  issues: string[];
+}
+
+export interface PlatformActivityItem {
+  id: string;
+  orgId?: string | null;
+  orgName?: string | null;
+  actorRole?: string | null;
+  action: string;
+  targetType: string;
+  targetId?: string | null;
+  createdAt: string;
+}
+
+export interface PlatformSummary {
+  generatedAt: string;
+  overview: {
+    organizationCount: number;
+    operatingOrganizationCount: number;
+    organizationsNeedingAttention: number;
+    botCount: number;
+    activeBotCount: number;
+    credentialErrorBotCount: number;
+    totalChannelCount: number;
+    connectedChannelCount: number;
+    totalQuota: number;
+    totalUsed: number;
+    quotaPressureOrganizationCount: number;
+    dlqCount: number;
+    endUserCount: number;
+    messageCount: number;
+    knowledgeItemCount: number;
+    embeddedKnowledgeCount: number;
+    approvedPaymentCount: number;
+  };
+  health: {
+    status: 'ok' | 'degraded';
+    api: 'ok';
+    db: boolean;
+    redis: boolean;
+    dlqCount: number;
+  };
+  charts: {
+    topUsageOrganizations: PlatformTopUsageOrganization[];
+    botStatuses: PlatformMetricBreakdown[];
+    planDistribution: PlatformMetricBreakdown[];
+    providerDistribution: PlatformMetricBreakdown[];
+  };
+  organizations: {
+    rows: PlatformOrganizationRow[];
+    attention: PlatformOrganizationRow[];
+  };
+  recentActivity: PlatformActivityItem[];
+}

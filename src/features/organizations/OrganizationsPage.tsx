@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Building2, Plus, Save, Trash2, UserPlus } from 'lucide-react';
+import { Bot, Building2, Plus, Save, ShieldCheck, Trash2, UserPlus, Users } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -117,6 +117,9 @@ export function OrganizationsPage() {
   const activeOrg = orgQuery.data;
   const usage = activeOrg && activeOrg.msgQuota > 0 ? activeOrg.msgUsed / activeOrg.msgQuota : 0;
   const quotaStatus = activeOrg?.msgQuota === 0 ? 'Ilimitado' : formatPercent(usage);
+  const activeBotCount = activeOrg?.bots?.length ?? 0;
+  const selectedActiveBots = activeOrg?.bots?.filter((bot) => bot.status === 'active').length ?? 0;
+  const usageBarWidth = activeOrg?.msgQuota === 0 ? 100 : Math.min(100, Math.round(usage * 100));
 
   const orgColumns = useMemo(
     () => [
@@ -147,12 +150,12 @@ export function OrganizationsPage() {
     <>
       <PageHeader
         title="Organizaciones"
-        description="Tenants, cuotas, retencion, Sentry por tenant y miembros. Plan/cuota dependen del RBAC del backend."
+        description="Gestiona tenants, cuotas, retencion, miembros y configuracion sensible con una vista mas ejecutiva."
         actions={
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="h-4 w-4" /> Crear
+                <Plus className="h-4 w-4" /> Nueva organizacion
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -166,23 +169,103 @@ export function OrganizationsPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard title="Tenants" value={formatNumber(orgs.length)} icon={Building2} />
-        <MetricCard title="Uso seleccionado" value={quotaStatus} detail={activeOrg ? `${formatNumber(activeOrg.msgUsed)} mensajes` : 'Sin seleccion'} />
-        <MetricCard title="Miembros" value={formatNumber(membersQuery.data?.length ?? 0)} detail={user?.role ?? 'rol desconocido'} />
+        <MetricCard
+          title="Plan actual"
+          value={activeOrg ? activeOrg.plan : 'Sin seleccion'}
+          detail={activeOrg ? `${formatNumber(activeBotCount)} bots ligados` : 'Selecciona una organizacion'}
+          icon={Bot}
+          tone={activeOrg?.plan === 'enterprise' ? 'success' : activeOrg?.plan === 'pro' ? 'default' : 'warning'}
+        />
+        <MetricCard
+          title="Uso seleccionado"
+          value={quotaStatus}
+          detail={activeOrg ? `${formatNumber(activeOrg.msgUsed)} mensajes` : 'Sin seleccion'}
+          icon={ShieldCheck}
+        />
+        <MetricCard title="Miembros" value={formatNumber(membersQuery.data?.length ?? 0)} detail={user?.role ?? 'rol desconocido'} icon={Users} />
       </div>
 
-      <div className="mt-5">
-        {orgsQuery.isError ? (
-          <ErrorState error={orgsQuery.error} onRetry={() => orgsQuery.refetch()} />
-        ) : (
-          <DataTable
-            columns={orgColumns}
-            data={orgs}
-            getRowKey={(org) => org.id}
-            empty={<EmptyState title="Sin organizaciones" description="Registra una organizacion desde login o usa superadmin para crear tenants." />}
-          />
-        )}
+      <div className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <div>
+          {orgsQuery.isError ? (
+            <ErrorState error={orgsQuery.error} onRetry={() => orgsQuery.refetch()} />
+          ) : (
+            <DataTable
+              columns={orgColumns}
+              data={orgs}
+              getRowKey={(org) => org.id}
+              empty={<EmptyState title="Sin organizaciones" description="Registra una organizacion desde login o usa superadmin para crear tenants." />}
+            />
+          )}
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Organizacion seleccionada</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activeOrg ? (
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-semibold">{activeOrg.name}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">Alta {formatDate(activeOrg.createdAt)}</p>
+                    </div>
+                    <StatusBadge status={activeOrg.plan} />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Bots</p>
+                    <p className="mt-2 text-xl font-semibold">{formatNumber(activeBotCount)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatNumber(selectedActiveBots)} activos</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Miembros</p>
+                    <p className="mt-2 text-xl font-semibold">{formatNumber(membersQuery.data?.length ?? 0)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{user?.isSuperadmin ? 'Vista completa' : 'Segun permisos'}</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Retencion</p>
+                    <p className="mt-2 text-xl font-semibold">
+                      {activeOrg.msgRetentionDays == null ? 'Libre' : `${formatNumber(activeOrg.msgRetentionDays)} d`}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">Mensajes historicos</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Sentry</p>
+                    <p className="mt-2 text-xl font-semibold">{activeOrg.hasSentryDsn ? 'Activo' : 'Pendiente'}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">DSN cifrado en backend</p>
+                  </div>
+                </div>
+
+                <div className="rounded-md border p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Consumo de cuota</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatNumber(activeOrg.msgUsed)} de {activeOrg.msgQuota === 0 ? 'ilimitado' : formatNumber(activeOrg.msgQuota)}
+                      </p>
+                    </div>
+                    <span className="text-sm font-medium">{quotaStatus}</span>
+                  </div>
+                  <div className="mt-3 h-2 rounded-full bg-slate-100">
+                    <div
+                      className={`h-2 rounded-full ${usage >= 0.85 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                      style={{ width: `${usageBarWidth}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <EmptyState title="Selecciona una organizacion" description="Aqui veras el resumen operativo antes de editar configuracion." />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_0.9fr]">
@@ -226,7 +309,7 @@ export function OrganizationsPage() {
             <CardTitle>Miembros</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form className="grid gap-3 md:grid-cols-[1fr_1fr_130px_auto]" onSubmit={memberForm.handleSubmit((values) => inviteMember.mutate(values))}>
+            <form className="grid gap-3 rounded-lg border p-4 md:grid-cols-[1fr_1fr_130px_auto]" onSubmit={memberForm.handleSubmit((values) => inviteMember.mutate(values))}>
               <Input placeholder="email@empresa.com" {...memberForm.register('email')} />
               <Input type="password" placeholder="password temporal" {...memberForm.register('password')} />
               <Select {...memberForm.register('role')}>
