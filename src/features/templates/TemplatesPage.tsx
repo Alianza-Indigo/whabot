@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { FileText, Send } from 'lucide-react';
+import { Bot, FileText, Send, Smartphone } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { BotPicker } from '@/components/common/BotPicker';
@@ -57,26 +57,56 @@ export function TemplatesPage() {
     <>
       <PageHeader
         title="Templates / Mensajes proactivos"
-        description="Envio de templates aprobados por Meta. No se expone envio libre fuera de la ventana de 24 horas."
+        description="Envio de templates aprobados por Meta con el contexto mínimo necesario para no disparar mensajes a ciegas."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard title="Canales conectados" value={connectedChannels.length} icon={FileText} />
         <MetricCard title="Catalogo templates" value="No expuesto" detail="TODO API: endpoint de lista/aprobacion" />
         <MetricCard title="Rate limit backend" value="20/min" />
+        <MetricCard title="Bot actual" value={botsQuery.data?.find((bot) => bot.id === botId)?.name ?? 'Sin seleccion'} icon={Bot} />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card>
-          <CardHeader><CardTitle>Contexto</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <BotPicker value={botId} onChange={setBotId} />
-            <div className="rounded-md border bg-amber-50 p-3 text-sm text-amber-800">
-              WhatsApp exige template aprobado para mensajes proactivos fuera de la ventana de 24 horas.
-            </div>
-            <EmptyState title="Catalogo no disponible" description="TODO API: falta endpoint para listar templates aprobados por WABA." />
-          </CardContent>
-        </Card>
+      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Contexto</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <BotPicker value={botId} onChange={setBotId} />
+              <div className="rounded-md border bg-amber-50 p-3 text-sm text-amber-800">
+                WhatsApp exige template aprobado para mensajes proactivos fuera de la ventana de 24 horas.
+              </div>
+              <EmptyState title="Catalogo no disponible" description="TODO API: falta endpoint para listar templates aprobados por WABA." />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Lectura rápida</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs uppercase text-muted-foreground">Canales listos</p>
+                      <Smartphone className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="mt-2 text-xl font-semibold">{connectedChannels.length}</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs uppercase text-muted-foreground">Catálogo</p>
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="mt-2 text-xl font-semibold">Pendiente</p>
+                  </div>
+                </div>
+                <div className="rounded-md border p-3 text-sm text-muted-foreground">
+                  Esta pantalla ya sirve para enviar templates sabiendo por qué canal saldrán. Cuando exista el endpoint de catálogo, aquí podemos convertirla en selector asistido.
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader><CardTitle>Enviar template</CardTitle></CardHeader>

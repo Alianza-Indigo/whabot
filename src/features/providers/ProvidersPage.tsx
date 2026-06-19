@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { KeyRound, Plus, Save, Trash2 } from 'lucide-react';
+import { Bot, CreditCard, KeyRound, Plus, Save, Trash2, Waves } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { BotPicker } from '@/components/common/BotPicker';
@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { api } from '@/lib/resources';
-import type { Integration } from '@/lib/types';
+import type { Bot as BotType, Integration } from '@/lib/types';
 
 const INTEGRATION_PROVIDER_OPTIONS = {
   stt: [
@@ -123,6 +123,9 @@ export function ProvidersPage() {
   const bots = botsQuery.data ?? [];
   const configured = bots.filter((bot) => bot.llmApiKeySet).length;
   const integrations = integrationsQuery.data ?? [];
+  const selectedBot = botQuery.data as BotType | undefined;
+  const paymentIntegrations = integrations.filter((row) => row.kind === 'payments').length;
+  const sttIntegrations = integrations.filter((row) => row.kind === 'stt').length;
 
   const columns = useMemo(
     () => [
@@ -160,31 +163,66 @@ export function ProvidersPage() {
     <>
       <PageHeader
         title="Credenciales / Providers"
-        description="LLM BYO por agente y credenciales auxiliares como STT o embeddings. Las API keys se escriben y rotan; nunca se leen desde el frontend."
+        description="Gestiona LLM BYO e integrations auxiliares por agente. Las API keys se escriben y rotan; nunca se leen desde el frontend."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard title="LLM keys configuradas" value={`${configured}/${bots.length}`} icon={KeyRound} />
-        <MetricCard title="Integrations" value={integrations.length} />
-        <MetricCard title="Agente seleccionado" value={botQuery.data?.name ?? 'n/a'} detail={botQuery.data?.llmProvider ?? 'sin provider'} />
+        <MetricCard title="Integrations" value={integrations.length} icon={Waves} />
+        <MetricCard title="Pagos" value={paymentIntegrations} icon={CreditCard} />
+        <MetricCard title="Agente seleccionado" value={selectedBot?.name ?? 'n/a'} detail={selectedBot?.llmProvider ?? 'sin provider'} icon={Bot} />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card>
-          <CardHeader><CardTitle>Agente</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <BotPicker value={botId} onChange={setBotId} />
-            {botQuery.data ? (
-              <div className="rounded-md border p-3 text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span>{botQuery.data.llmProvider ?? 'provider sin definir'}</span>
-                  <SecretField isSet={botQuery.data.llmApiKeySet} label="LLM key" />
+      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Agente</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <BotPicker value={botId} onChange={setBotId} />
+              {selectedBot ? (
+                <div className="space-y-3 rounded-md border p-3 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span>{selectedBot.llmProvider ?? 'provider sin definir'}</span>
+                    <SecretField isSet={selectedBot.llmApiKeySet} label="LLM key" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">{selectedBot.llmModel ?? 'modelo sin definir'}</p>
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">{botQuery.data.llmModel ?? 'modelo sin definir'}</p>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Resumen de credenciales</CardTitle></CardHeader>
+            <CardContent>
+              {selectedBot ? (
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-semibold">{selectedBot.name}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{selectedBot.locale} · {selectedBot.llmProvider ?? 'sin provider'}</p>
+                    </div>
+                    <StatusBadge status={selectedBot.status} />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-md border p-3">
+                      <p className="text-xs uppercase text-muted-foreground">STT</p>
+                      <p className="mt-2 text-xl font-semibold">{sttIntegrations}</p>
+                    </div>
+                    <div className="rounded-md border p-3">
+                      <p className="text-xs uppercase text-muted-foreground">Payments</p>
+                      <p className="mt-2 text-xl font-semibold">{paymentIntegrations}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-md border p-3 text-sm text-muted-foreground">
+                    Esta vista concentra configuración sensible. El objetivo es ver de un vistazo qué integración tiene el bot y qué credencial sigue pendiente.
+                  </div>
+                </div>
+              ) : (
+                <EmptyState title="Selecciona un agente" description="Aquí verás su contexto de credenciales antes de rotar o crear integrations." />
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader><CardTitle>LLM provider</CardTitle></CardHeader>
