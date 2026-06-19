@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { DatabaseZap, FileSearch, FileUp, RefreshCcw, Save, Trash2 } from 'lucide-react';
+import { Bot, DatabaseZap, FileSearch, FileUp, RefreshCcw, Save, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { BotPicker } from '@/components/common/BotPicker';
@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/resources';
-import type { KnowledgeItem } from '@/lib/types';
+import type { Bot as BotType, KnowledgeItem } from '@/lib/types';
 
 const knowledgeSchema = z.object({
   title: z.string().min(1).max(200),
@@ -121,6 +121,7 @@ export function KnowledgePage() {
   const items = knowledgeQuery.data ?? [];
   const embedded = items.filter((item) => item.hasEmbedding).length;
   const importedSources = useMemo(() => groupImportedKnowledge(items), [items]);
+  const selectedBot = useMemo<BotType | undefined>(() => botsQuery.data?.find((bot) => bot.id === botId), [botId, botsQuery.data]);
   const columns = useMemo(
     () => [
       { key: 'title', header: 'Documento', render: (item: KnowledgeItem) => <button className="font-medium text-primary hover:underline" onClick={() => setSelectedItem(item)}>{item.title}</button> },
@@ -150,7 +151,7 @@ export function KnowledgePage() {
     <>
       <PageHeader
         title="Knowledge / RAG"
-        description="Base de conocimiento por agente. Soporta CRUD textual, carga de documentos y reindexado de embeddings."
+        description="Base de conocimiento por agente con CRUD textual, carga documental, OCR y prueba directa de recuperacion."
         actions={
           <Button disabled={!botId || embedKnowledge.isPending} onClick={() => embedKnowledge.mutate()} type="button" variant="outline">
             <RefreshCcw className="h-4 w-4" /> Reindexar
@@ -170,6 +171,33 @@ export function KnowledgePage() {
           <CardHeader><CardTitle>Agente</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <BotPicker value={botId} onChange={setBotId} />
+            {selectedBot ? (
+              <div className="rounded-md border p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-base font-semibold">{selectedBot.name}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{selectedBot.llmProvider ?? 'Provider sin definir'} · {selectedBot.llmModel ?? 'Modelo pendiente'}</p>
+                  </div>
+                  <StatusBadge status={selectedBot.status} />
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs uppercase text-muted-foreground">Items</p>
+                      <Bot className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="mt-2 text-xl font-semibold">{items.length}</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs uppercase text-muted-foreground">Embeddings</p>
+                      <DatabaseZap className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <p className="mt-2 text-xl font-semibold">{embedded}</p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <div className="space-y-3 rounded-md border p-3">
               <div>
                 <p className="text-sm font-medium">Cargar archivo</p>
@@ -297,6 +325,30 @@ export function KnowledgePage() {
                 </div>
               )) : <EmptyState title="Sin importaciones" description="Los archivos que subas aqui quedaran agrupados para administrarlos mejor." />}
               {deleteImport.isError ? <ErrorState error={deleteImport.error} /> : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Item seleccionado</CardTitle></CardHeader>
+            <CardContent>
+              {selectedItem ? (
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-base font-semibold">{selectedItem.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {getVisibleKnowledgeTags(selectedItem.tags).join(', ') || 'sin tags visibles'}
+                      </p>
+                    </div>
+                    <StatusBadge status={selectedItem.hasEmbedding} />
+                  </div>
+                  <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+                    {selectedItem.content}
+                  </div>
+                </div>
+              ) : (
+                <EmptyState title="Sin item seleccionado" description="Elige un documento o chunk para revisar rapido su contenido antes de editarlo." />
+              )}
             </CardContent>
           </Card>
 

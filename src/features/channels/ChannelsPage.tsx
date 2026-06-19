@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Save, Smartphone, Trash2 } from 'lucide-react';
+import { Bot, CheckCircle2, KeyRound, Plus, Save, Smartphone, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { BotPicker } from '@/components/common/BotPicker';
@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { api } from '@/lib/resources';
-import type { Channel } from '@/lib/types';
+import type { Bot as BotType, Channel } from '@/lib/types';
 
 const channelSchema = z.object({
   provider: z.string().min(1),
@@ -102,6 +102,9 @@ export function ChannelsPage() {
   });
 
   const channels = channelsQuery.data ?? [];
+  const selectedBot = useMemo<BotType | undefined>(() => botsQuery.data?.find((bot) => bot.id === botId), [botId, botsQuery.data]);
+  const connectedChannels = channels.filter((channel) => channel.status === 'connected').length;
+  const pendingOrErrorChannels = channels.filter((channel) => channel.status !== 'connected').length;
   const columns = useMemo(
     () => [
       { key: 'phoneId', header: 'Phone number ID', render: (channel: Channel) => <button className="font-medium text-primary hover:underline" onClick={() => setSelectedChannel(channel)}>{channel.phoneId}</button> },
@@ -129,19 +132,56 @@ export function ChannelsPage() {
 
   return (
     <>
-      <PageHeader title="Canales WhatsApp" description="Provisiona Meta Cloud API, rota tokens y verifica estado sin exponer credenciales completas." />
+      <PageHeader title="Canales WhatsApp" description="Provisiona, rota y valida credenciales de WhatsApp con una lectura operativa mas clara por agente." />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard title="Canales" value={channels.length} icon={Smartphone} />
-        <MetricCard title="Conectados" value={channels.filter((channel) => channel.status === 'connected').length} tone="success" />
-        <MetricCard title="Pendientes/error" value={channels.filter((channel) => channel.status !== 'connected').length} tone={channels.some((channel) => channel.status !== 'connected') ? 'warning' : 'success'} />
+        <MetricCard title="Conectados" value={connectedChannels} tone="success" icon={CheckCircle2} />
+        <MetricCard title="Pendientes/error" value={pendingOrErrorChannels} tone={pendingOrErrorChannels ? 'warning' : 'success'} icon={KeyRound} />
+        <MetricCard title="Bot actual" value={selectedBot?.name ?? 'Sin seleccion'} detail={selectedBot?.status ?? 'Selecciona un agente'} icon={Bot} />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card>
-          <CardHeader><CardTitle>Agente</CardTitle></CardHeader>
-          <CardContent><BotPicker value={botId} onChange={setBotId} /></CardContent>
-        </Card>
+      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Agente</CardTitle></CardHeader>
+            <CardContent><BotPicker value={botId} onChange={setBotId} /></CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Resumen del canal</CardTitle></CardHeader>
+            <CardContent>
+              {selectedBot ? (
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-semibold">{selectedBot.name}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{selectedBot.llmProvider ?? 'Provider sin definir'}</p>
+                    </div>
+                    <StatusBadge status={selectedBot.status} />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-md border p-3">
+                      <p className="text-xs uppercase text-muted-foreground">Canales</p>
+                      <p className="mt-2 text-xl font-semibold">{channels.length}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{connectedChannels} conectados</p>
+                    </div>
+                    <div className="rounded-md border p-3">
+                      <p className="text-xs uppercase text-muted-foreground">Incidencias</p>
+                      <p className="mt-2 text-xl font-semibold">{pendingOrErrorChannels}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Pendientes o en error</p>
+                    </div>
+                  </div>
+                  <div className="rounded-md border p-3 text-sm text-muted-foreground">
+                    Selecciona una fila para rotar tokens, mover estado o validar que el canal activo realmente quedó listo para operar.
+                  </div>
+                </div>
+              ) : (
+                <EmptyState title="Selecciona un agente" description="Aqui veras el estado general de sus canales antes de editar credenciales." />
+              )}
+            </CardContent>
+          </Card>
+        </div>
         <div>
           <DataTable
             columns={columns}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { CreditCard, MessageSquareText, ShieldAlert, Star, Users } from 'lucide-react';
+import { Bot, CreditCard, MessageSquareText, ShieldAlert, Star, Users, Wallet } from 'lucide-react';
 import { BotPicker } from '@/components/common/BotPicker';
 import { DataTable } from '@/components/common/DataTable';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -11,7 +11,7 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { api } from '@/lib/resources';
-import type { Bot, CrisisEvent, EndUser, Feedback, Payment } from '@/lib/types';
+import type { Bot as BotType, CrisisEvent, EndUser, Feedback, Payment } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 export function ConversationsPage() {
@@ -51,7 +51,7 @@ export function ConversationsPage() {
     if (!botId && botsQuery.data?.[0]) setBotId(botsQuery.data[0].id);
   }, [botId, botsQuery.data]);
 
-  const selectedBot = useMemo<Bot | undefined>(() => botsQuery.data?.find((bot) => bot.id === botId), [botId, botsQuery.data]);
+  const selectedBot = useMemo<BotType | undefined>(() => botsQuery.data?.find((bot) => bot.id === botId), [botId, botsQuery.data]);
   const membershipEnabled = selectedBot?.identity?.membership?.enabled === true;
 
   const paymentsQuery = useQuery({
@@ -116,7 +116,7 @@ export function ConversationsPage() {
     <>
       <PageHeader
         title="Conversaciones"
-        description="Vista operativa de usuarios finales, membresias, pagos, feedback y eventos de crisis por agente."
+        description="Vista operativa de usuarios finales, membresias, pagos, feedback y eventos sensibles por agente."
       />
 
       <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-5">
@@ -147,40 +147,78 @@ export function ConversationsPage() {
         />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card>
-          <CardHeader><CardTitle>Filtros</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <BotPicker value={botId} onChange={setBotId} />
-            <div>
-              <label className="field-label">Estado usuario</label>
-              <Select value={pausedFilter} onChange={(event) => setPausedFilter(event.target.value)}>
-                <option value="">todos</option>
-                <option value="false">activos</option>
-                <option value="true">pausados</option>
-              </Select>
-            </div>
-            {membershipEnabled ? (
+      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Filtros</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <BotPicker value={botId} onChange={setBotId} />
               <div>
-                <label className="field-label">Estado del pago</label>
-                <Select value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value)}>
+                <label className="field-label">Estado usuario</label>
+                <Select value={pausedFilter} onChange={(event) => setPausedFilter(event.target.value)}>
                   <option value="">todos</option>
-                  <option value="approved">aprobados</option>
-                  <option value="pending">pendientes</option>
-                  <option value="rejected">rechazados</option>
+                  <option value="false">activos</option>
+                  <option value="true">pausados</option>
                 </Select>
               </div>
-            ) : null}
-            <EmptyState
-              title={membershipEnabled ? 'Microsaas visible por agente' : 'Detalle de conversacion no disponible'}
-              description={
-                membershipEnabled
-                  ? 'Esta vista ya muestra consumo gratis, vigencia y pagos. La bandeja operativa y mensajes por conversacion quedarian para CRM/handoff.'
-                  : 'TODO API: falta endpoint para conversaciones, mensajes por conversacion, provider usado y safety result. No se usa export ARCO como sustituto operativo.'
-              }
-            />
-          </CardContent>
-        </Card>
+              {membershipEnabled ? (
+                <div>
+                  <label className="field-label">Estado del pago</label>
+                  <Select value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value)}>
+                    <option value="">todos</option>
+                    <option value="approved">aprobados</option>
+                    <option value="pending">pendientes</option>
+                    <option value="rejected">rechazados</option>
+                  </Select>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Resumen del agente</CardTitle></CardHeader>
+            <CardContent>
+              {selectedBot ? (
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-semibold">{selectedBot.name}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{selectedBot.llmProvider ?? 'Provider sin definir'}</p>
+                    </div>
+                    <StatusBadge status={selectedBot.status} />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-md border p-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs uppercase text-muted-foreground">Modo comercial</p>
+                        <Wallet className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <p className="mt-2 text-base font-semibold">{membershipEnabled ? 'Microsaas' : 'Tradicional'}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {membershipEnabled ? 'Con pagos y vigencias' : 'Sin paywall activo'}
+                      </p>
+                    </div>
+                    <div className="rounded-md border p-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs uppercase text-muted-foreground">Usuarios visibles</p>
+                        <Bot className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <p className="mt-2 text-base font-semibold">{users.length}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{activeMembers} con membresia activa</p>
+                    </div>
+                  </div>
+                  <div className="rounded-md border p-3 text-sm text-muted-foreground">
+                    {membershipEnabled
+                      ? 'Esta vista ya te deja seguir consumo gratis, vigencias y pagos. La bandeja conversacional completa quedaria para CRM y handoff.'
+                      : 'Todavia falta el endpoint conversacional completo; aqui nos quedamos en lectura operativa de usuarios, feedback y crisis.'}
+                  </div>
+                </div>
+              ) : (
+                <EmptyState title="Selecciona un agente" description="Aqui veras contexto operativo antes de bajar a usuarios, pagos y señales de riesgo." />
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         <DataTable
           columns={userColumns}
