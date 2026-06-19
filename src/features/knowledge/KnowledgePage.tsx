@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { DatabaseZap, FileUp, RefreshCcw, Save, Trash2 } from 'lucide-react';
+import { DatabaseZap, FileSearch, FileUp, RefreshCcw, Save, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { BotPicker } from '@/components/common/BotPicker';
@@ -34,6 +34,7 @@ export function KnowledgePage() {
   const botsQuery = useQuery({ queryKey: ['bots'], queryFn: api.bots });
   const [botId, setBotId] = useState('');
   const [selectedDocument, setSelectedDocument] = useState<File | null>(null);
+  const [previewQuery, setPreviewQuery] = useState('');
   const [pdfInputKey, setPdfInputKey] = useState(0);
   const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null);
   const knowledgeQuery = useQuery({ queryKey: ['knowledge', botId], queryFn: () => api.knowledge(botId), enabled: Boolean(botId) });
@@ -45,6 +46,7 @@ export function KnowledgePage() {
   useEffect(() => {
     setSelectedItem(null);
     setSelectedDocument(null);
+    setPreviewQuery('');
     setPdfInputKey((value) => value + 1);
   }, [botId]);
 
@@ -103,6 +105,9 @@ export function KnowledgePage() {
   const embedKnowledge = useMutation({
     mutationFn: () => api.embedKnowledge(botId),
     onSuccess: invalidate,
+  });
+  const previewKnowledge = useMutation({
+    mutationFn: (query: string) => api.previewKnowledge(botId, query),
   });
   const uploadDocument = useMutation({
     mutationFn: (file: File) => api.uploadKnowledgeDocument(botId, file),
@@ -199,10 +204,74 @@ export function KnowledgePage() {
               </div>
             ) : null}
             {embedKnowledge.isError ? <ErrorState error={embedKnowledge.error} /> : null}
+            <div className="space-y-3 rounded-md border p-3">
+              <div>
+                <p className="text-sm font-medium">Probar recuperacion</p>
+                <p className="text-xs text-muted-foreground">
+                  Escribe una pregunta como la haria un cliente final y revisa que knowledge esta recuperando el backend.
+                </p>
+              </div>
+              <Input
+                placeholder="Ej. horarios de entrega en Chihuahua"
+                value={previewQuery}
+                onChange={(event) => setPreviewQuery(event.target.value)}
+              />
+              <Button
+                disabled={!botId || !previewQuery.trim() || previewKnowledge.isPending}
+                onClick={() => previewKnowledge.mutate(previewQuery.trim())}
+                type="button"
+                variant="outline"
+              >
+                <FileSearch className="h-4 w-4" /> Probar consulta
+              </Button>
+              {previewKnowledge.isError ? <ErrorState error={previewKnowledge.error} /> : null}
+            </div>
           </CardContent>
         </Card>
 
         <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Vista previa de recuperacion</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {previewKnowledge.data ? (
+                <>
+                  <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                    <div><span className="font-medium">Consulta:</span> {previewKnowledge.data.query}</div>
+                    <div><span className="font-medium">Metodo:</span> {describeRetrievalMode(previewKnowledge.data.mode)}</div>
+                    <div><span className="font-medium">Items:</span> {previewKnowledge.data.total}</div>
+                  </div>
+                  {previewKnowledge.data.items.length ? previewKnowledge.data.items.map((item) => (
+                    <button
+                      className="block w-full rounded-md border p-3 text-left hover:bg-muted/40"
+                      key={item.id}
+                      onClick={() => setSelectedItem(item)}
+                      type="button"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="font-medium">{item.title}</div>
+                        <StatusBadge status={item.hasEmbedding} />
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {getVisibleKnowledgeTags(item.tags).join(', ') || 'sin tags'}
+                      </div>
+                      <div className="mt-2 line-clamp-4 text-sm text-muted-foreground">{item.content}</div>
+                    </button>
+                  )) : (
+                    <EmptyState
+                      title="Sin resultados"
+                      description="Esta consulta no encontro chunks relevantes en la base de conocimiento."
+                    />
+                  )}
+                </>
+              ) : (
+                <EmptyState
+                  title="Sin prueba"
+                  description="Corre una consulta de ejemplo para ver exactamente que knowledge esta trayendo el backend."
+                />
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader><CardTitle>Importaciones</CardTitle></CardHeader>
             <CardContent className="space-y-3">
@@ -332,4 +401,17 @@ function groupImportedKnowledge(items: KnowledgeItem[]) {
     });
   }
   return Array.from(grouped.values()).sort((a, b) => a.title.localeCompare(b.title, 'es'));
+}
+
+function describeRetrievalMode(mode: 'none' | 'keyword' | 'semantic' | 'vector') {
+  switch (mode) {
+    case 'vector':
+      return 'vectorial';
+    case 'semantic':
+      return 'semantico';
+    case 'keyword':
+      return 'palabras clave';
+    default:
+      return 'sin coincidencias';
+  }
 }

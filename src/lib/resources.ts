@@ -14,6 +14,7 @@ import type {
   HealthResponse,
   Integration,
   KnowledgeItem,
+  KnowledgePreviewResult,
   KnowledgeUploadResult,
   LoginResponse,
   OrgMember,
@@ -105,6 +106,11 @@ export const api = {
     body.append('file', file);
     return apiRequest<KnowledgeUploadResult>(`/admin/bots/${botId}/knowledge/upload-document`, { method: 'POST', body });
   },
+  previewKnowledge: (botId: string, query: string) =>
+    apiRequest<KnowledgePreviewResult>(`/admin/bots/${botId}/knowledge/preview`, {
+      method: 'POST',
+      body: JSON.stringify({ query }),
+    }),
   embedKnowledge: (botId: string) =>
     apiRequest<{ updated: number; failed: number; total: number }>(`/admin/bots/${botId}/knowledge/embed`, { method: 'POST' }),
 

@@ -165,6 +165,13 @@ export interface KnowledgeUploadResult {
   totalChunks: number;
 }
 
+export interface KnowledgePreviewResult {
+  query: string;
+  mode: 'none' | 'keyword' | 'semantic' | 'vector';
+  total: number;
+  items: KnowledgeItem[];
+}
+
 export interface EndUser {
   id: string;
   botId: string;
