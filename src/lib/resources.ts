@@ -100,10 +100,10 @@ export const api = {
     apiRequest<KnowledgeItem>(`/admin/bots/${botId}/knowledge/${itemId}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteKnowledge: (botId: string, itemId: string) =>
     apiRequest<void>(`/admin/bots/${botId}/knowledge/${itemId}`, { method: 'DELETE' }),
-  uploadKnowledgePdf: (botId: string, file: File) => {
+  uploadKnowledgeDocument: (botId: string, file: File) => {
     const body = new FormData();
     body.append('file', file);
-    return apiRequest<KnowledgeUploadResult>(`/admin/bots/${botId}/knowledge/upload-pdf`, { method: 'POST', body });
+    return apiRequest<KnowledgeUploadResult>(`/admin/bots/${botId}/knowledge/upload-document`, { method: 'POST', body });
   },
   embedKnowledge: (botId: string) =>
     apiRequest<{ updated: number; failed: number; total: number }>(`/admin/bots/${botId}/knowledge/embed`, { method: 'POST' }),
