@@ -158,7 +158,7 @@ export interface KnowledgeItem {
 
 export interface KnowledgeUploadResult {
   sourceTitle: string;
-  sourceType: 'pdf' | 'docx' | 'txt' | 'csv' | 'xlsx' | 'xls';
+  sourceType: 'pdf' | 'docx' | 'txt' | 'csv' | 'xlsx' | 'xls' | 'png' | 'jpg' | 'jpeg' | 'webp';
   created: number;
   embedded: number;
   failed: number;

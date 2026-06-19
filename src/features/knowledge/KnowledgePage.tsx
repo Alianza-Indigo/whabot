@@ -154,12 +154,12 @@ export function KnowledgePage() {
               <div>
                 <p className="text-sm font-medium">Cargar archivo</p>
                 <p className="text-xs text-muted-foreground">
-                  Acepta pdf, docx, txt, csv, xlsx y xls. Extrae texto legible, lo divide en chunks y crea items de knowledge. Si el agente tiene embeddings configurados, intenta indexarlos al vuelo.
+                  Acepta pdf, docx, txt, csv, xlsx, xls, png, jpg, jpeg y webp. Para imagenes usa OCR con el mismo provider, modelo y credencial que ya configuro el usuario en el bot.
                 </p>
               </div>
               <Input
                 key={pdfInputKey}
-                accept=".pdf,.docx,.txt,.csv,.xlsx,.xls"
+                accept=".pdf,.docx,.txt,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.webp"
                 type="file"
                 onChange={(event) => setSelectedDocument(event.target.files?.[0] ?? null)}
               />
