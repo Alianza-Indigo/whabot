@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { DatabaseZap, RefreshCcw, Save, Trash2 } from 'lucide-react';
+import { DatabaseZap, FileUp, RefreshCcw, Save, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { BotPicker } from '@/components/common/BotPicker';
@@ -31,6 +31,8 @@ export function KnowledgePage() {
   const queryClient = useQueryClient();
   const botsQuery = useQuery({ queryKey: ['bots'], queryFn: api.bots });
   const [botId, setBotId] = useState('');
+  const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
+  const [pdfInputKey, setPdfInputKey] = useState(0);
   const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null);
   const knowledgeQuery = useQuery({ queryKey: ['knowledge', botId], queryFn: () => api.knowledge(botId), enabled: Boolean(botId) });
 
@@ -40,6 +42,8 @@ export function KnowledgePage() {
 
   useEffect(() => {
     setSelectedItem(null);
+    setSelectedPdf(null);
+    setPdfInputKey((value) => value + 1);
   }, [botId]);
 
   useEffect(() => {
@@ -87,6 +91,14 @@ export function KnowledgePage() {
     mutationFn: () => api.embedKnowledge(botId),
     onSuccess: invalidate,
   });
+  const uploadPdf = useMutation({
+    mutationFn: (file: File) => api.uploadKnowledgePdf(botId, file),
+    onSuccess: () => {
+      setSelectedPdf(null);
+      setPdfInputKey((value) => value + 1);
+      invalidate();
+    },
+  });
 
   const items = knowledgeQuery.data ?? [];
   const embedded = items.filter((item) => item.hasEmbedding).length;
@@ -119,7 +131,7 @@ export function KnowledgePage() {
     <>
       <PageHeader
         title="Knowledge / RAG"
-        description="Base de conocimiento por agente. El backend soporta items textuales y reindexado; no expone upload de archivos."
+        description="Base de conocimiento por agente. Soporta CRUD textual, carga de PDF con chunking y reindexado de embeddings."
         actions={
           <Button disabled={!botId || embedKnowledge.isPending} onClick={() => embedKnowledge.mutate()} type="button" variant="outline">
             <RefreshCcw className="h-4 w-4" /> Reindexar
@@ -138,9 +150,34 @@ export function KnowledgePage() {
           <CardHeader><CardTitle>Agente</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <BotPicker value={botId} onChange={setBotId} />
-            <div className="rounded-md border bg-amber-50 p-3 text-sm text-amber-800">
-              TODO API: falta endpoint de upload de documentos. Se usa CRUD textual real.
+            <div className="space-y-3 rounded-md border p-3">
+              <div>
+                <p className="text-sm font-medium">Cargar PDF</p>
+                <p className="text-xs text-muted-foreground">
+                  Extrae texto legible del PDF, lo divide en chunks y crea items de knowledge. Si el agente tiene embeddings configurados, intenta indexarlos al vuelo.
+                </p>
+              </div>
+              <Input
+                key={pdfInputKey}
+                accept="application/pdf,.pdf"
+                type="file"
+                onChange={(event) => setSelectedPdf(event.target.files?.[0] ?? null)}
+              />
+              <Button disabled={!botId || !selectedPdf || uploadPdf.isPending} onClick={() => selectedPdf && uploadPdf.mutate(selectedPdf)} type="button">
+                <FileUp className="h-4 w-4" /> Subir PDF
+              </Button>
+              {selectedPdf ? (
+                <div className="text-xs text-muted-foreground">
+                  Archivo seleccionado: {selectedPdf.name}
+                </div>
+              ) : null}
             </div>
+            {uploadPdf.data ? (
+              <div className="rounded-md border bg-emerald-50 p-3 text-sm text-emerald-800">
+                PDF importado: {uploadPdf.data.created} items desde {uploadPdf.data.totalChunks} chunks, {uploadPdf.data.embedded} con embedding y {uploadPdf.data.failed} fallidos.
+              </div>
+            ) : null}
+            {uploadPdf.isError ? <ErrorState error={uploadPdf.error} /> : null}
             {embedKnowledge.data ? (
               <div className="rounded-md border bg-emerald-50 p-3 text-sm text-emerald-800">
                 Reindexado: {embedKnowledge.data.updated} actualizados, {embedKnowledge.data.failed} fallidos de {embedKnowledge.data.total}.

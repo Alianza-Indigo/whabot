@@ -156,6 +156,14 @@ export interface KnowledgeItem {
   hasEmbedding: boolean;
 }
 
+export interface KnowledgeUploadResult {
+  sourceTitle: string;
+  created: number;
+  embedded: number;
+  failed: number;
+  totalChunks: number;
+}
+
 export interface EndUser {
   id: string;
   botId: string;
