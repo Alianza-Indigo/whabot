@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Activity, LockKeyhole, MessageSquareText, ShieldAlert, TriangleAlert } from 'lucide-react';
+import { Activity, BarChart3, LockKeyhole, MessageSquareText, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorState } from '@/components/common/ErrorState';
 import { MetricCard } from '@/components/common/MetricCard';
@@ -37,41 +37,65 @@ export function MetricsPage() {
         description="Prometheus text exposition del backend. La admin key se mantiene solo en memoria de esta pestaña."
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <MetricCard title="Health" value={<StatusBadge status={healthQuery.data?.status ?? 'pending'} />} icon={Activity} />
         <MetricCard title="Mensajes procesados" value={formatNumber(metricSum(metrics, 'chatbox_messages_processed_total'))} icon={MessageSquareText} />
         <MetricCard title="Safety blocks" value={formatNumber(metricSum(metrics, 'chatbox_safety_blocks_total'))} icon={ShieldAlert} />
         <MetricCard title="DLQ depth" value={formatNumber(metricSum(metrics, 'chatbox_dlq_depth'))} icon={TriangleAlert} />
+        <MetricCard title="Series por tenant" value={orgMessages.length} icon={BarChart3} />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card>
-          <CardHeader><CardTitle>Acceso a /metrics</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-md border p-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span>DB</span>
-                <StatusBadge status={healthQuery.data?.db ? 'ok' : 'degraded'} />
+      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Acceso a /metrics</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border p-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>DB</span>
+                  <StatusBadge status={healthQuery.data?.db ? 'ok' : 'degraded'} />
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span>Redis</span>
+                  <StatusBadge status={healthQuery.data?.redis ? 'ok' : 'degraded'} />
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">Ultimo check: {formatDate(healthQuery.data?.ts)}</p>
               </div>
-              <div className="mt-2 flex items-center justify-between">
-                <span>Redis</span>
-                <StatusBadge status={healthQuery.data?.redis ? 'ok' : 'degraded'} />
+              <div>
+                <label className="field-label">Admin API key</label>
+                <div className="flex gap-2">
+                  <Input type="password" autoComplete="off" value={adminKeyDraft} onChange={(event) => setAdminKeyDraft(event.target.value)} />
+                  <Button type="button" onClick={() => setAdminKey(adminKeyDraft)}>
+                    <LockKeyhole className="h-4 w-4" /> Usar
+                  </Button>
+                </div>
+                <p className="field-help">No se persiste en localStorage/sessionStorage.</p>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">Ultimo check: {formatDate(healthQuery.data?.ts)}</p>
-            </div>
-            <div>
-              <label className="field-label">Admin API key</label>
-              <div className="flex gap-2">
-                <Input type="password" autoComplete="off" value={adminKeyDraft} onChange={(event) => setAdminKeyDraft(event.target.value)} />
-                <Button type="button" onClick={() => setAdminKey(adminKeyDraft)}>
-                  <LockKeyhole className="h-4 w-4" /> Usar
-                </Button>
+              {metricsQuery.isError ? <ErrorState error={metricsQuery.error} /> : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Contexto de lectura</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="rounded-md border p-3 text-sm text-muted-foreground">
+                  Esta vista permite revisar salud y volumen por tenant sin salir a Prometheus. Sigue siendo técnica, pero ya deja claro si falta clave, si la plataforma está sana y qué series están activas.
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Admin key</p>
+                    <p className="mt-2 text-xl font-semibold">{adminKey ? 'Cargada' : 'Pendiente'}</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Series parseadas</p>
+                    <p className="mt-2 text-xl font-semibold">{metrics.length}</p>
+                  </div>
+                </div>
               </div>
-              <p className="field-help">No se persiste en localStorage/sessionStorage.</p>
-            </div>
-            {metricsQuery.isError ? <ErrorState error={metricsQuery.error} /> : null}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader><CardTitle>Mensajes por tenant</CardTitle></CardHeader>

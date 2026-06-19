@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, Save, ShieldCheck, Trash2 } from 'lucide-react';
+import { Bot, Download, Save, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { BotPicker } from '@/components/common/BotPicker';
@@ -95,35 +95,65 @@ export function CompliancePage() {
     <>
       <PageHeader
         title="Compliance / ARCO"
-        description="Acceso, rectificacion y supresion de datos personales por sujeto permitido. Cada accion usa endpoints auditados del backend."
+        description="Acceso, rectificación y supresión de datos personales por sujeto permitido. Cada acción usa endpoints auditados del backend."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard title="Sujetos" value={users.length} icon={ShieldCheck} />
-        <MetricCard title="Pausados" value={users.filter((user) => user.paused).length} />
-        <MetricCard title="Operacion legal" value="Auditada" />
+        <MetricCard title="Pausados" value={users.filter((user) => user.paused).length} icon={Users} />
+        <MetricCard title="Operación legal" value="Auditada" />
+        <MetricCard title="Bot actual" value={botsQuery.data?.find((bot) => bot.id === botId)?.name ?? 'Sin selección'} icon={Bot} />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card>
-          <CardHeader><CardTitle>Busqueda</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <BotPicker value={botId} onChange={setBotId} />
-            <div>
-              <label className="field-label">Estado</label>
-              <Select value={pausedFilter} onChange={(event) => setPausedFilter(event.target.value)}>
-                <option value="">todos</option>
-                <option value="false">activos</option>
-                <option value="true">pausados</option>
-              </Select>
-            </div>
-            <div>
-              <label className="field-label">Identificador permitido</label>
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="user id o locale" />
-              <p className="field-help">TODO API: no existe busqueda por telefono/email; el backend solo expone ids no PII.</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="mt-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Búsqueda</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <BotPicker value={botId} onChange={setBotId} />
+              <div>
+                <label className="field-label">Estado</label>
+                <Select value={pausedFilter} onChange={(event) => setPausedFilter(event.target.value)}>
+                  <option value="">todos</option>
+                  <option value="false">activos</option>
+                  <option value="true">pausados</option>
+                </Select>
+              </div>
+              <div>
+                <label className="field-label">Identificador permitido</label>
+                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="user id o locale" />
+                <p className="field-help">TODO API: no existe búsqueda por teléfono/email; el backend solo expone ids no PII.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Contexto legal</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="rounded-md border p-3">
+                  <p className="text-sm font-medium">Superficie disponible</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Esta pantalla expone sujetos no identificables, exportación controlada, rectificación de locale y borrado auditado.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Sujetos visibles</p>
+                    <p className="mt-2 text-xl font-semibold">{filteredUsers.length}</p>
+                  </div>
+                  <div className="rounded-md border p-3">
+                    <p className="text-xs uppercase text-muted-foreground">Export cargado</p>
+                    <p className="mt-2 text-xl font-semibold">{exportUser.data ? 'Sí' : 'No'}</p>
+                  </div>
+                </div>
+                <div className="rounded-md border bg-amber-50 p-3 text-sm text-amber-800">
+                  Verifica identidad y fundamento legal antes de exportar, rectificar o borrar datos.
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <DataTable
           columns={columns}
@@ -162,9 +192,6 @@ export function CompliancePage() {
                   >
                     <Button type="button" variant="destructive"><Trash2 className="h-4 w-4" /> Borrar datos</Button>
                   </ConfirmDialog>
-                </div>
-                <div className="rounded-md border bg-amber-50 p-3 text-sm text-amber-800">
-                  Verifica identidad y fundamento legal antes de exportar, rectificar o borrar datos.
                 </div>
               </>
             ) : (

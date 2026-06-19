@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { RefreshCcw, Trash2, TriangleAlert } from 'lucide-react';
+import { RefreshCcw, ShieldAlert, Trash2, TriangleAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -71,15 +71,16 @@ export function DLQPage() {
 
   return (
     <>
-      <PageHeader title="Dead-letter queue" description="Operaciones superadmin para inspeccionar, reintentar o descartar jobs fallidos." />
+      <PageHeader title="Dead-letter queue" description="Operaciones superadmin para inspeccionar, reintentar o descartar jobs fallidos sin perder trazabilidad." />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard title="DLQ depth" value={countQuery.isError ? 'Sin permiso' : countQuery.data?.count ?? 0} icon={TriangleAlert} tone={(countQuery.data?.count ?? 0) > 0 ? 'danger' : 'success'} />
         <MetricCard title="Jobs listados" value={jobsQuery.data?.length ?? 0} />
         <MetricCard title="Permiso requerido" value="superadmin" />
+        <MetricCard title="Riesgo operativo" value={(countQuery.data?.count ?? 0) > 0 ? 'Atender' : 'Estable'} icon={ShieldAlert} tone={(countQuery.data?.count ?? 0) > 0 ? 'warning' : 'success'} />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <div>
           <DataTable
             columns={columns}
@@ -91,8 +92,22 @@ export function DLQPage() {
         </div>
 
         <Card>
-          <CardHeader><CardTitle>Payload sanitizado</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Lectura rápida</CardTitle></CardHeader>
           <CardContent className="space-y-4">
+            <div className="rounded-md border p-3 text-sm text-muted-foreground">
+              La DLQ concentra jobs que agotaron reintentos. Aquí la meta es decidir rápido si conviene reencolar, descartar o purgar por antigüedad.
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Pendientes</p>
+                <p className="mt-2 text-xl font-semibold">{countQuery.data?.count ?? 0}</p>
+              </div>
+              <div className="rounded-md border p-3">
+                <p className="text-xs uppercase text-muted-foreground">Muestra actual</p>
+                <p className="mt-2 text-xl font-semibold">{jobsQuery.data?.length ?? 0}</p>
+              </div>
+            </div>
+            <div className="text-sm font-medium">Payload sanitizado</div>
             {(jobsQuery.data ?? []).slice(0, 3).map((job) => (
               <div key={job.id} className="rounded-md border p-3">
                 <p className="mb-2 text-sm font-medium">{job.id}</p>
@@ -110,7 +125,7 @@ export function DLQPage() {
           <form className="flex flex-col gap-3 md:flex-row md:items-end" onSubmit={purgeForm.handleSubmit((values) => purge.mutate(values))}>
             <div className="md:w-64">
               <label className="field-label">Older than hours</label>
-              <Input type="number" min={0} placeholder="vacio = todo" {...purgeForm.register('olderThanHours')} />
+              <Input type="number" min={0} placeholder="vacío = todo" {...purgeForm.register('olderThanHours')} />
             </div>
             <ConfirmDialog
               title="Purgar DLQ"
