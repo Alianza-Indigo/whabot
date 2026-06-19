@@ -174,7 +174,7 @@ export function KnowledgePage() {
               <div>
                 <p className="text-sm font-medium">Cargar archivo</p>
                 <p className="text-xs text-muted-foreground">
-                  Acepta pdf, docx, txt, csv, xlsx, xls, png, jpg, jpeg y webp. Para imagenes usa OCR con el mismo provider, modelo y credencial que ya configuro el usuario en el bot.
+                  Acepta pdf, docx, txt, csv, xlsx, xls, png, jpg, jpeg y webp. Las imagenes y los PDF escaneados usan OCR con el mismo provider, modelo y credencial que ya configuro el usuario en el bot.
                 </p>
               </div>
               <Input
