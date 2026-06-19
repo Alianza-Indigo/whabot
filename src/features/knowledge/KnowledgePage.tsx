@@ -38,6 +38,16 @@ export function KnowledgePage() {
     if (!botId && botsQuery.data?.[0]) setBotId(botsQuery.data[0].id);
   }, [botId, botsQuery.data]);
 
+  useEffect(() => {
+    setSelectedItem(null);
+  }, [botId]);
+
+  useEffect(() => {
+    if (!selectedItem) return;
+    const refreshed = knowledgeQuery.data?.find((item) => item.id === selectedItem.id) ?? null;
+    setSelectedItem(refreshed);
+  }, [knowledgeQuery.data, selectedItem]);
+
   const createForm = useForm<KnowledgeValues>({
     resolver: zodResolver(knowledgeSchema),
     defaultValues: { title: '', content: '', tagsText: '' },
@@ -61,7 +71,10 @@ export function KnowledgePage() {
   });
   const updateKnowledge = useMutation({
     mutationFn: (values: KnowledgeValues) => api.updateKnowledge(botId, selectedItem!.id, toPayload(values)),
-    onSuccess: invalidate,
+    onSuccess: (item) => {
+      setSelectedItem(item);
+      invalidate();
+    },
   });
   const deleteKnowledge = useMutation({
     mutationFn: (itemId: string) => api.deleteKnowledge(botId, itemId),
