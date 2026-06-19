@@ -26,7 +26,7 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { ErrorState } from '@/components/common/ErrorState';
 
 const navItems = [
-  { to: '/console', label: 'Dashboard', icon: Gauge },
+  { to: '/console', label: 'Dashboard', icon: Gauge, superadminOnly: true },
   { to: '/console/organizations', label: 'Organizaciones', icon: Building2 },
   { to: '/console/bots', label: 'Agentes', icon: Bot },
   { to: '/console/channels', label: 'Canales WhatsApp', icon: Smartphone },
@@ -62,6 +62,7 @@ export function AppLayout() {
   const location = useLocation();
   const orgsQuery = useQuery({ queryKey: ['organizations'], queryFn: api.organizations });
   const healthQuery = useQuery({ queryKey: ['health'], queryFn: api.health, refetchInterval: 30_000 });
+  const visibleNavItems = navItems.filter((item) => !item.superadminOnly || user?.isSuperadmin);
 
   const orgs = orgsQuery.data ?? [];
   const activeOrg = orgs.find((org) => org.id === selectedOrgId) ?? orgs[0];
@@ -83,7 +84,7 @@ export function AppLayout() {
           </div>
         </div>
         <nav className="space-y-1 p-3">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               end={item.to === '/console'}
@@ -142,7 +143,7 @@ export function AppLayout() {
             </div>
           </div>
           <nav className="flex gap-1 overflow-x-auto border-t px-3 py-2 lg:hidden">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 end={item.to === '/console'}

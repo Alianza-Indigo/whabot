@@ -24,6 +24,12 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return children;
 }
 
+function ConsoleHome() {
+  const { user } = useAuth();
+  if (user?.isSuperadmin) return <DashboardPage />;
+  return <Navigate to="/console/conversations" replace />;
+}
+
 export function App() {
   return (
     <Routes>
@@ -37,8 +43,8 @@ export function App() {
             <AppLayout />
           </RequireAuth>
         }
-      >
-        <Route index element={<DashboardPage />} />
+        >
+        <Route index element={<ConsoleHome />} />
         <Route path="organizations" element={<OrganizationsPage />} />
         <Route path="bots" element={<BotsPage />} />
         <Route path="channels" element={<ChannelsPage />} />
