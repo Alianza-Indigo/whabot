@@ -24,6 +24,7 @@ export interface RegisterResponse {
   token: string;
   orgId: string;
   userId: string;
+  role?: Role;
 }
 
 export interface HealthResponse {

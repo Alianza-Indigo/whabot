@@ -31,4 +31,29 @@ describe('session helpers', () => {
       },
     });
   });
+
+  it('marks superadmin sessions when the JWT role is superadmin', () => {
+    vi.stubGlobal('window', {
+      atob: (value: string) => Buffer.from(value, 'base64').toString('binary'),
+    });
+
+    const token = encodeJwtPayload({
+      sub: 'user_super',
+      orgId: 'org_456',
+      role: 'superadmin',
+      exp: 4102444800,
+    });
+
+    expect(buildStoredSession({ token, userId: 'user_super', orgId: 'org_456', role: 'superadmin' }, 'mossomex@gmail.com')).toEqual({
+      token,
+      exp: 4102444800,
+      user: {
+        userId: 'user_super',
+        orgId: 'org_456',
+        role: 'superadmin',
+        email: 'mossomex@gmail.com',
+        isSuperadmin: true,
+      },
+    });
+  });
 });
