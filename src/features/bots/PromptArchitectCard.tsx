@@ -9,31 +9,132 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { Bot, PromptArchitectBlueprint, PromptArchitectDraftResponse } from '@/lib/types';
+
+const objectiveOptions = {
+  lead_capture: 'Captar prospectos y calificar su interes antes de pasarlos al equipo.',
+  sales_closer: 'Atender consultas comerciales y empujar la conversacion hacia cotizacion o cierre.',
+  support_firstline: 'Resolver preguntas frecuentes y soporte de primer nivel sin escalar todo.',
+  booking: 'Agendar citas, demos o visitas con datos claros y confirmacion.',
+  onboarding: 'Explicar el servicio, pedir datos iniciales y orientar los primeros pasos.',
+  membership: 'Atender usuarios de membresia, explicar beneficios y empujar renovacion o pago.',
+} as const;
+
+const audienceOptions = {
+  prospects: 'Prospectos nuevos que llegan por primera vez.',
+  customers: 'Clientes activos que ya conocen el negocio.',
+  members: 'Miembros o asociados con relacion continua.',
+  patients: 'Pacientes o usuarios que requieren orientacion cuidadosa.',
+  students: 'Alumnos o aspirantes que preguntan por inscripcion o seguimiento.',
+} as const;
+
+const toneOptions = {
+  warm: 'Cercano, amable y facil de entender.',
+  professional: 'Profesional, confiable y orientado a resolver.',
+  executive: 'Directo, sobrio y eficiente.',
+  premium: 'Consultivo, elegante y de alto valor percibido.',
+  technical: 'Claro, tecnico y preciso sin sonar frio.',
+} as const;
+
+const industryOptions = {
+  services: 'Negocio de servicios con conversacion consultiva y seguimiento.',
+  retail: 'Venta de productos, catalogo y respuestas rapidas sobre compra.',
+  clinic: 'Atencion delicada, ordenada y con fuerte criterio de escalamiento.',
+  education: 'Informacion de programas, inscripciones y acompanamiento.',
+  association: 'Comunicacion institucional, membresias, beneficios y eventos.',
+  real_estate: 'Calificacion, agenda y seguimiento comercial estructurado.',
+} as const;
+
+const offeringOptions = {
+  catalog: 'Maneja un catalogo de productos o paquetes con variantes.',
+  service_quote: 'Explica servicios y detecta si se requiere cotizacion.',
+  booking: 'Su principal accion es agendar cita, llamada o demo.',
+  support: 'Su principal accion es resolver dudas y soporte operativo.',
+  membership: 'Opera membresias, renovaciones, pagos o beneficios.',
+} as const;
+
+const flowOptions = {
+  qualify_route: 'Abrir, descubrir necesidad, calificar y llevar al siguiente paso.',
+  faq_then_handoff: 'Resolver preguntas frecuentes y escalar casos complejos.',
+  book_confirm: 'Detectar interes, proponer horario y confirmar cita.',
+  guided_sale: 'Entender contexto, sugerir opcion y buscar cierre o pago.',
+  intake_triage: 'Recibir informacion, clasificar el caso y derivarlo con orden.',
+} as const;
+
+const escalationOptions = {
+  complex_only: 'Escalar solo cuando el caso sea complejo, ambiguo o sensible.',
+  on_request: 'Escalar cuando el usuario lo pida o cuando el bot no tenga certeza.',
+  legal_payment: 'Escalar temas legales, pagos irregulares, reclamos o excepciones.',
+  strict_human: 'Escalar cualquier negociacion delicada o compromiso relevante.',
+} as const;
+
+const scopeOptions = {
+  no_promises: 'No prometer disponibilidad, tiempos o resultados no confirmados.',
+  no_custom_price: 'No inventar precios, descuentos o condiciones especiales.',
+  no_sensitive_advice: 'No dar consejo medico, legal o financiero como definitivo.',
+  no_system_claims: 'No fingir acciones que no ha confirmado el sistema o el humano.',
+} as const;
+
+const knowledgeOptions = {
+  grounded: 'Usar knowledge como fuente principal y admitir cuando falte informacion.',
+  light: 'Usar knowledge solo como apoyo y priorizar respuestas breves.',
+  strict: 'No responder fuera de lo documentado; si falta contexto, escalar.',
+} as const;
+
+const toolOptions = {
+  none: 'Sin herramientas externas; solo conversacion y conocimiento.',
+  crm: 'Puede capturar datos y preparar contexto para CRM o seguimiento.',
+  booking: 'Puede apoyar agenda o coordinacion de citas.',
+  payments: 'Puede orientar sobre pagos o membresias, sin fingir confirmacion.',
+  mixed: 'Puede trabajar con CRM, agenda y pagos segun el caso.',
+} as const;
+
+const handoffOptions = {
+  high_intent: 'Escalar cuando detecte alta intencion de compra o cierre.',
+  frustrated_user: 'Escalar si el usuario muestra frustracion o insiste en humano.',
+  special_case: 'Escalar cuando el caso salga del flujo previsto o requiera excepcion.',
+  compliance: 'Escalar si aparece un riesgo de cumplimiento o datos sensibles.',
+} as const;
+
+const outputOptions = {
+  concise: 'Respuestas cortas, claras y con una sola accion siguiente.',
+  consultative: 'Respuestas algo mas guiadas, con contexto y recomendacion puntual.',
+  structured: 'Respuestas ordenadas por pasos, bullets o bloques muy legibles.',
+} as const;
+
+const prohibitedOptions = {
+  standard: 'Evitar inventar, exagerar o sonar mas seguro de lo que realmente sabe.',
+  strict: 'Evitar toda afirmacion dudosa y escalar cuando la certeza no alcance.',
+  compliance: 'Extremar cuidado con promesas, datos sensibles y autorizaciones.',
+} as const;
+
+const testOptions = {
+  sales: 'Debe funcionar bien en consultas comerciales, objeciones y cierre.',
+  support: 'Debe funcionar bien en preguntas frecuentes, friccion y seguimiento.',
+  booking: 'Debe funcionar bien en agenda, cambios y confirmaciones.',
+  risk: 'Debe funcionar bien en casos limite, escalamiento y cumplimiento.',
+} as const;
 
 const architectSchema = z.object({
   mode: z.enum(['quick', 'advanced']),
   assistantName: z.string().optional(),
   businessName: z.string().optional(),
-  objective: z.string().trim().min(1, 'Define el objetivo principal del agente.'),
-  audience: z.string().optional(),
-  tone: z.string().optional(),
-  businessContext: z.string().optional(),
-  offerings: z.string().optional(),
-  successCriteria: z.string().optional(),
-  happyPath: z.string().optional(),
-  conversationFlow: z.string().optional(),
-  knowledgePolicy: z.string().optional(),
-  variables: z.string().optional(),
-  tools: z.string().optional(),
-  escalationRules: z.string().optional(),
-  handoffTriggers: z.string().optional(),
-  outOfScope: z.string().optional(),
-  prohibitedContent: z.string().optional(),
-  outputFormat: z.string().optional(),
-  exampleDialogues: z.string().optional(),
-  testScenarios: z.string().optional(),
+  objectivePreset: z.enum(Object.keys(objectiveOptions) as [keyof typeof objectiveOptions, ...(keyof typeof objectiveOptions)[]]),
+  audiencePreset: z.enum(Object.keys(audienceOptions) as [keyof typeof audienceOptions, ...(keyof typeof audienceOptions)[]]),
+  tonePreset: z.enum(Object.keys(toneOptions) as [keyof typeof toneOptions, ...(keyof typeof toneOptions)[]]),
+  industryPreset: z.enum(Object.keys(industryOptions) as [keyof typeof industryOptions, ...(keyof typeof industryOptions)[]]),
+  offeringPreset: z.enum(Object.keys(offeringOptions) as [keyof typeof offeringOptions, ...(keyof typeof offeringOptions)[]]),
+  flowPreset: z.enum(Object.keys(flowOptions) as [keyof typeof flowOptions, ...(keyof typeof flowOptions)[]]),
+  escalationPreset: z.enum(Object.keys(escalationOptions) as [keyof typeof escalationOptions, ...(keyof typeof escalationOptions)[]]),
+  scopePreset: z.enum(Object.keys(scopeOptions) as [keyof typeof scopeOptions, ...(keyof typeof scopeOptions)[]]),
+  knowledgePreset: z.enum(Object.keys(knowledgeOptions) as [keyof typeof knowledgeOptions, ...(keyof typeof knowledgeOptions)[]]),
+  toolPreset: z.enum(Object.keys(toolOptions) as [keyof typeof toolOptions, ...(keyof typeof toolOptions)[]]),
+  handoffPreset: z.enum(Object.keys(handoffOptions) as [keyof typeof handoffOptions, ...(keyof typeof handoffOptions)[]]),
+  outputPreset: z.enum(Object.keys(outputOptions) as [keyof typeof outputOptions, ...(keyof typeof outputOptions)[]]),
+  prohibitedPreset: z.enum(Object.keys(prohibitedOptions) as [keyof typeof prohibitedOptions, ...(keyof typeof prohibitedOptions)[]]),
+  testPreset: z.enum(Object.keys(testOptions) as [keyof typeof testOptions, ...(keyof typeof testOptions)[]]),
 });
 
 type ArchitectFormValues = z.infer<typeof architectSchema>;
@@ -88,7 +189,7 @@ export function PromptArchitectCard({
           <div>
             <CardTitle>Arquitecto de prompt</CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">
-              Define el brief operativo del chatbot y genera un borrador listo para pasar al prompt versionado.
+              Ahora el creador guía por selecciones cerradas y convierte esas decisiones en un brief listo para generar el prompt.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -104,7 +205,7 @@ export function PromptArchitectCard({
             icon={BrainCircuit}
             label="Modo"
             value={mode === 'advanced' ? 'Avanzado' : 'Rapido'}
-            detail={mode === 'advanced' ? 'Cobertura completa' : 'Ruta corta para iterar'}
+            detail={mode === 'advanced' ? 'Mas control y validacion' : 'Configuracion guiada esencial'}
           />
           <ArchitectMetric
             icon={FilePenLine}
@@ -138,92 +239,90 @@ export function PromptArchitectCard({
                 </ModeButton>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Rapido sirve para sacar una primera version con lo esencial. Avanzado agrega reglas, variables, handoff y pruebas.
+                Rapido toma decisiones principales del agente. Avanzado agrega control sobre conocimiento, herramientas, handoff y formato.
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Nombre del agente">
-                <Input placeholder="Asistente comercial, concierge, intake..." {...form.register('assistantName')} />
+                <Input placeholder="Asistente comercial" {...form.register('assistantName')} />
               </Field>
               <Field label="Negocio o marca">
-                <Input placeholder="Empresa, asociacion o linea de negocio" {...form.register('businessName')} />
+                <Input placeholder="Nombre comercial" {...form.register('businessName')} />
               </Field>
-              <div className="md:col-span-2">
-                <Field label="Objetivo principal">
-                  <Textarea rows={3} placeholder="Que debe resolver este agente, para quien y con que resultado esperado." {...form.register('objective')} />
-                </Field>
-              </div>
-              <Field label="Audiencia">
-                <Input placeholder="Prospectos, clientes recurrentes, pacientes, alumnos..." {...form.register('audience')} />
+              <Field label="Objetivo del chatbot">
+                <Select {...form.register('objectivePreset')}>
+                  {renderOptions(objectiveOptions)}
+                </Select>
               </Field>
-              <Field label="Tono y estilo">
-                <Input placeholder="Profesional, cercano, ejecutivo, tecnico..." {...form.register('tone')} />
+              <Field label="Audiencia principal">
+                <Select {...form.register('audiencePreset')}>
+                  {renderOptions(audienceOptions)}
+                </Select>
               </Field>
-              <div className="md:col-span-2">
-                <Field label="Contexto del negocio">
-                  <Textarea rows={4} placeholder="Describe el negocio, su operacion y lo que el agente necesita comprender." {...form.register('businessContext')} />
-                </Field>
-              </div>
-              <div className="md:col-span-2">
-                <Field label="Productos, servicios o casos que atiende">
-                  <Textarea rows={3} placeholder="Que vende, gestiona o explica con mayor frecuencia." {...form.register('offerings')} />
-                </Field>
-              </div>
-              <div className="md:col-span-2">
-                <Field label="Flujo ideal de atencion">
-                  <Textarea rows={4} placeholder="Como deberia abrir, descubrir necesidad, orientar y cerrar o llevar al siguiente paso." {...form.register('happyPath')} />
-                </Field>
-              </div>
-              <div className="md:col-span-2">
-                <Field label="Escalamiento y limites">
-                  <Textarea rows={3} placeholder="Cuando debe pasar a humano, detenerse o pedir mas contexto." {...form.register('escalationRules')} />
-                </Field>
-              </div>
-              <div className="md:col-span-2">
-                <Field label="Fuera de alcance">
-                  <Textarea rows={3} placeholder="Lo que no debe prometer, responder o ejecutar." {...form.register('outOfScope')} />
-                </Field>
-              </div>
+              <Field label="Tono del agente">
+                <Select {...form.register('tonePreset')}>
+                  {renderOptions(toneOptions)}
+                </Select>
+              </Field>
+              <Field label="Tipo de negocio">
+                <Select {...form.register('industryPreset')}>
+                  {renderOptions(industryOptions)}
+                </Select>
+              </Field>
+              <Field label="Que atiende principalmente">
+                <Select {...form.register('offeringPreset')}>
+                  {renderOptions(offeringOptions)}
+                </Select>
+              </Field>
+              <Field label="Flujo conversacional">
+                <Select {...form.register('flowPreset')}>
+                  {renderOptions(flowOptions)}
+                </Select>
+              </Field>
+              <Field label="Regla de escalamiento">
+                <Select {...form.register('escalationPreset')}>
+                  {renderOptions(escalationOptions)}
+                </Select>
+              </Field>
+              <Field label="Limite principal">
+                <Select {...form.register('scopePreset')}>
+                  {renderOptions(scopeOptions)}
+                </Select>
+              </Field>
             </div>
 
             {mode === 'advanced' ? (
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <Field label="Criterios de exito">
-                    <Textarea rows={3} placeholder="Como se ve una conversacion bien resuelta para este agente." {...form.register('successCriteria')} />
-                  </Field>
-                </div>
-                <div className="md:col-span-2">
-                  <Field label="Flujo conversacional detallado">
-                    <Textarea rows={4} placeholder="Estados, ramas, validaciones o secuencias importantes." {...form.register('conversationFlow')} />
-                  </Field>
-                </div>
-                <div className="md:col-span-2">
-                  <Field label="Politica de conocimiento">
-                    <Textarea rows={3} placeholder="Como debe usar knowledge, cuando citar, cuando admitir falta de informacion." {...form.register('knowledgePolicy')} />
-                  </Field>
-                </div>
-                <Field label="Variables dinamicas">
-                  <Textarea rows={3} placeholder="Datos disponibles: nombre, sucursal, horario, inventario, CRM..." {...form.register('variables')} />
+                <Field label="Uso de knowledge">
+                  <Select {...form.register('knowledgePreset')}>
+                    {renderOptions(knowledgeOptions)}
+                  </Select>
                 </Field>
-                <Field label="Herramientas o integraciones">
-                  <Textarea rows={3} placeholder="Webhook, CRM, agenda, pagos, catalogo, handoff..." {...form.register('tools')} />
+                <Field label="Herramientas disponibles">
+                  <Select {...form.register('toolPreset')}>
+                    {renderOptions(toolOptions)}
+                  </Select>
                 </Field>
-                <Field label="Triggers de handoff">
-                  <Textarea rows={3} placeholder="Casos precisos donde se requiere humano." {...form.register('handoffTriggers')} />
+                <Field label="Trigger de handoff">
+                  <Select {...form.register('handoffPreset')}>
+                    {renderOptions(handoffOptions)}
+                  </Select>
                 </Field>
-                <Field label="Formato de salida">
-                  <Textarea rows={3} placeholder="Longitud, estructura, bullets, CTA, lenguaje permitido..." {...form.register('outputFormat')} />
+                <Field label="Formato de respuesta">
+                  <Select {...form.register('outputPreset')}>
+                    {renderOptions(outputOptions)}
+                  </Select>
                 </Field>
-                <Field label="Contenido prohibido">
-                  <Textarea rows={3} placeholder="Temas sensibles, promesas, diagnosticos, precios inventados..." {...form.register('prohibitedContent')} />
+                <Field label="Nivel de restriccion">
+                  <Select {...form.register('prohibitedPreset')}>
+                    {renderOptions(prohibitedOptions)}
+                  </Select>
                 </Field>
-                <Field label="Ejemplos de dialogo">
-                  <Textarea rows={4} placeholder="Casos de muestra, respuestas deseadas o anti-patrones." {...form.register('exampleDialogues')} />
-                </Field>
-                <Field label="Escenarios de prueba">
-                  <Textarea rows={4} placeholder="Casos que deben validarse antes de publicar." {...form.register('testScenarios')} />
+                <Field label="Escenario a optimizar">
+                  <Select {...form.register('testPreset')}>
+                    {renderOptions(testOptions)}
+                  </Select>
                 </Field>
               </div>
             ) : null}
@@ -258,9 +357,9 @@ export function PromptArchitectCard({
                 <p className="font-medium">Salida esperada</p>
               </div>
               <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <p>El arquitecto redacta un prompt operativo para WhatsApp, no una descripcion conceptual.</p>
-                <p>Siempre deja el borrador en el editor de prompt versionado para que podamos revisarlo antes de publicar.</p>
-                <p>Si ya existe un prompt, lo toma como base y lo reordena con el brief actual.</p>
+                <p>El creador ya no deja huecos conceptuales amplios: parte de decisiones cerradas y las traduce a instrucciones operativas.</p>
+                <p>Siempre deja el borrador en el editor de prompt versionado para revisarlo antes de publicar.</p>
+                <p>Si ya existe un prompt, lo toma como base y lo reordena con las nuevas selecciones.</p>
               </div>
             </div>
 
@@ -278,7 +377,7 @@ export function PromptArchitectCard({
                 <Textarea className="mt-3 min-h-[360px]" readOnly value={draftPreview} />
               ) : (
                 <div className="mt-3 rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                  Aun no hay borrador en el editor. Genera uno aqui y aparecerá listo para revisión y publicación.
+                  Aun no hay borrador en el editor. Selecciona la configuracion y genera uno para revisarlo.
                 </div>
               )}
             </div>
@@ -286,10 +385,10 @@ export function PromptArchitectCard({
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4 text-slate-700" />
-                <p className="font-medium text-slate-900">Recomendacion de trabajo</p>
+                <p className="font-medium text-slate-900">Criterio de uso</p>
               </div>
               <p className="mt-2 text-sm text-slate-700">
-                Guarda el brief cuando definas la estrategia del agente. Genera cuantas veces haga falta y publica solo la version que ya se vea firme.
+                Este creador sirve para sacar prompts consistentes mas rapido. Si algo muy especifico hace falta, lo ajustamos despues sobre el prompt versionado, no desde preguntas abiertas.
               </p>
             </div>
           </div>
@@ -347,66 +446,67 @@ function ArchitectMetric({
   );
 }
 
+function renderOptions(options: Record<string, string>) {
+  return Object.entries(options).map(([value, label]) => (
+    <option key={value} value={value}>
+      {label}
+    </option>
+  ));
+}
+
+function findPreset<T extends Record<string, string>>(options: T, saved?: string | null, fallback?: keyof T): keyof T {
+  const match = Object.entries(options).find(([, value]) => value === saved)?.[0] as keyof T | undefined;
+  return match ?? (fallback as keyof T);
+}
+
 function toArchitectFormValues(bot?: Bot): ArchitectFormValues {
   const saved = bot?.identity?.promptArchitect;
   return {
     mode: saved?.mode ?? 'quick',
     assistantName: saved?.assistantName ?? bot?.name ?? '',
     businessName: saved?.businessName ?? bot?.branding?.companyName ?? '',
-    objective: saved?.objective ?? '',
-    audience: saved?.audience ?? '',
-    tone: saved?.tone ?? '',
-    businessContext: saved?.businessContext ?? '',
-    offerings: saved?.offerings ?? '',
-    successCriteria: saved?.successCriteria ?? '',
-    happyPath: saved?.happyPath ?? '',
-    conversationFlow: saved?.conversationFlow ?? '',
-    knowledgePolicy: saved?.knowledgePolicy ?? '',
-    variables: saved?.variables ?? '',
-    tools: saved?.tools ?? '',
-    escalationRules: saved?.escalationRules ?? '',
-    handoffTriggers: saved?.handoffTriggers ?? '',
-    outOfScope: saved?.outOfScope ?? '',
-    prohibitedContent: saved?.prohibitedContent ?? '',
-    outputFormat: saved?.outputFormat ?? '',
-    exampleDialogues: saved?.exampleDialogues ?? '',
-    testScenarios: saved?.testScenarios ?? '',
+    objectivePreset: findPreset(objectiveOptions, saved?.objective, 'lead_capture'),
+    audiencePreset: findPreset(audienceOptions, saved?.audience, 'prospects'),
+    tonePreset: findPreset(toneOptions, saved?.tone, 'professional'),
+    industryPreset: findPreset(industryOptions, saved?.businessContext, 'services'),
+    offeringPreset: findPreset(offeringOptions, saved?.offerings, 'service_quote'),
+    flowPreset: findPreset(flowOptions, saved?.happyPath, 'qualify_route'),
+    escalationPreset: findPreset(escalationOptions, saved?.escalationRules, 'complex_only'),
+    scopePreset: findPreset(scopeOptions, saved?.outOfScope, 'no_promises'),
+    knowledgePreset: findPreset(knowledgeOptions, saved?.knowledgePolicy, 'grounded'),
+    toolPreset: findPreset(toolOptions, saved?.tools, 'none'),
+    handoffPreset: findPreset(handoffOptions, saved?.handoffTriggers, 'high_intent'),
+    outputPreset: findPreset(outputOptions, saved?.outputFormat, 'concise'),
+    prohibitedPreset: findPreset(prohibitedOptions, saved?.prohibitedContent, 'standard'),
+    testPreset: findPreset(testOptions, saved?.testScenarios, 'sales'),
   };
 }
 
 function toBlueprint(values: ArchitectFormValues): PromptArchitectBlueprint {
   const blueprint: PromptArchitectBlueprint = {
     mode: values.mode,
-    objective: values.objective.trim(),
+    objective: objectiveOptions[values.objectivePreset],
+    audience: audienceOptions[values.audiencePreset],
+    tone: toneOptions[values.tonePreset],
+    businessContext: industryOptions[values.industryPreset],
+    offerings: offeringOptions[values.offeringPreset],
+    happyPath: flowOptions[values.flowPreset],
+    escalationRules: escalationOptions[values.escalationPreset],
+    outOfScope: scopeOptions[values.scopePreset],
   };
 
-  const optionalFields: Array<keyof Omit<PromptArchitectBlueprint, 'mode' | 'objective'>> = [
-    'assistantName',
-    'businessName',
-    'audience',
-    'tone',
-    'businessContext',
-    'offerings',
-    'successCriteria',
-    'happyPath',
-    'conversationFlow',
-    'knowledgePolicy',
-    'variables',
-    'tools',
-    'escalationRules',
-    'handoffTriggers',
-    'outOfScope',
-    'prohibitedContent',
-    'outputFormat',
-    'exampleDialogues',
-    'testScenarios',
-  ];
+  if (values.assistantName?.trim()) blueprint.assistantName = values.assistantName.trim();
+  if (values.businessName?.trim()) blueprint.businessName = values.businessName.trim();
 
-  for (const field of optionalFields) {
-    const value = values[field];
-    if (typeof value === 'string' && value.trim()) {
-      blueprint[field] = value.trim();
-    }
+  if (values.mode === 'advanced') {
+    blueprint.knowledgePolicy = knowledgeOptions[values.knowledgePreset];
+    blueprint.tools = toolOptions[values.toolPreset];
+    blueprint.handoffTriggers = handoffOptions[values.handoffPreset];
+    blueprint.outputFormat = outputOptions[values.outputPreset];
+    blueprint.prohibitedContent = prohibitedOptions[values.prohibitedPreset];
+    blueprint.testScenarios = testOptions[values.testPreset];
+    blueprint.successCriteria = 'El agente debe mantener conversaciones utiles, claras y alineadas al objetivo definido, sin inventar datos ni perder el siguiente paso comercial u operativo.';
+    blueprint.conversationFlow = `${flowOptions[values.flowPreset]} ${outputOptions[values.outputPreset]}`;
   }
 
   return blueprint;
