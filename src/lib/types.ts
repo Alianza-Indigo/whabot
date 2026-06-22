@@ -102,7 +102,46 @@ export interface MembershipConfig {
   paywallMessage?: string;
 }
 
-export type BotIdentity = Record<string, unknown> & { membership?: MembershipConfig };
+export type PromptArchitectMode = 'quick' | 'advanced';
+
+export interface PromptArchitectBlueprint {
+  mode: PromptArchitectMode;
+  assistantName?: string;
+  businessName?: string;
+  objective: string;
+  audience?: string;
+  tone?: string;
+  businessContext?: string;
+  offerings?: string;
+  successCriteria?: string;
+  happyPath?: string;
+  conversationFlow?: string;
+  knowledgePolicy?: string;
+  variables?: string;
+  tools?: string;
+  escalationRules?: string;
+  handoffTriggers?: string;
+  outOfScope?: string;
+  prohibitedContent?: string;
+  outputFormat?: string;
+  exampleDialogues?: string;
+  testScenarios?: string;
+}
+
+export interface PromptArchitectDraftResponse {
+  draftPrompt: string;
+  meta: {
+    provider: string;
+    model: string;
+    basedOnExistingPrompt: boolean;
+    mode: PromptArchitectMode;
+  };
+}
+
+export type BotIdentity = Record<string, unknown> & {
+  membership?: MembershipConfig;
+  promptArchitect?: PromptArchitectBlueprint;
+};
 
 export interface Bot {
   id: string;

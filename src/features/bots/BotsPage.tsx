@@ -19,8 +19,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { PromptArchitectCard } from '@/features/bots/PromptArchitectCard';
 import { api } from '@/lib/resources';
-import type { Bot, BotCommand, CrisisConfig, MembershipConfig } from '@/lib/types';
+import type { Bot, BotCommand, CrisisConfig, MembershipConfig, PromptArchitectBlueprint, PromptArchitectDraftResponse } from '@/lib/types';
 import { compactJson, formatDate, formatNumber, parseJsonObject } from '@/lib/utils';
 
 const botSchema = z.object({
@@ -75,6 +76,7 @@ export function BotsPage() {
   const queryClient = useQueryClient();
   const [selectedBotId, setSelectedBotId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [architectMeta, setArchitectMeta] = useState<PromptArchitectDraftResponse['meta'] | null>(null);
   const botsQuery = useQuery({ queryKey: ['bots'], queryFn: api.bots });
   const botQuery = useQuery({ queryKey: ['bot', selectedBotId], queryFn: () => api.bot(selectedBotId!), enabled: Boolean(selectedBotId) });
   const promptsQuery = useQuery({ queryKey: ['prompts', selectedBotId], queryFn: () => api.prompts(selectedBotId!), enabled: Boolean(selectedBotId) });
@@ -91,6 +93,10 @@ export function BotsPage() {
   useEffect(() => {
     if (!selectedBotId && bots[0]) setSelectedBotId(bots[0].id);
   }, [bots, selectedBotId]);
+
+  useEffect(() => {
+    setArchitectMeta(null);
+  }, [selectedBotId]);
 
   const createForm = useForm<BotValues>({
     resolver: zodResolver(botSchema),
@@ -162,6 +168,20 @@ export function BotsPage() {
   const updatePrompt = useMutation({
     mutationFn: (values: PromptValues) => api.updatePrompt(selectedBotId!, values.systemPrompt),
     onSuccess: invalidateBot,
+  });
+  const saveArchitect = useMutation({
+    mutationFn: (blueprint: PromptArchitectBlueprint) => {
+      const identity = { ...(selectedBot?.identity ?? {}), promptArchitect: blueprint };
+      return api.updateBot(selectedBotId!, { identity });
+    },
+    onSuccess: invalidateBot,
+  });
+  const generateArchitect = useMutation({
+    mutationFn: (blueprint: PromptArchitectBlueprint) => api.generatePromptDraft(selectedBotId!, blueprint),
+    onSuccess: (result) => {
+      setArchitectMeta(result.meta);
+      promptForm.setValue('systemPrompt', result.draftPrompt, { shouldDirty: true });
+    },
   });
   const rollbackPrompt = useMutation({
     mutationFn: (version: number) => api.rollbackPrompt(selectedBotId!, version),
@@ -332,6 +352,19 @@ export function BotsPage() {
         </Card>
       </div>
 
+      <PromptArchitectCard
+        bot={selectedBot}
+        draftPreview={promptForm.watch('systemPrompt') ?? ''}
+        promptVersionCount={promptsQuery.data?.length ?? 0}
+        meta={architectMeta}
+        isSaving={saveArchitect.isPending}
+        isGenerating={generateArchitect.isPending}
+        saveError={saveArchitect.error}
+        generateError={generateArchitect.error}
+        onSaveBlueprint={(blueprint) => saveArchitect.mutate(blueprint)}
+        onGenerateDraft={(blueprint) => generateArchitect.mutate(blueprint)}
+      />
+
       <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <CardHeader><CardTitle>Configuracion del agente</CardTitle></CardHeader>
@@ -370,6 +403,9 @@ export function BotsPage() {
           <CardContent className="space-y-4">
             {selectedBot ? (
               <>
+                <div className="rounded-md border bg-muted/20 p-3 text-sm text-muted-foreground">
+                  El borrador del arquitecto se coloca aqui para revisarlo y publicarlo como una nueva version.
+                </div>
                 <form className="space-y-3" onSubmit={promptForm.handleSubmit((values) => updatePrompt.mutate(values))}>
                   <Textarea rows={8} {...promptForm.register('systemPrompt')} />
                   <Button disabled={updatePrompt.isPending} type="submit"><Save className="h-4 w-4" /> Publicar version</Button>

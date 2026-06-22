@@ -22,6 +22,8 @@ import type {
   Payment,
   PlatformSummary,
   PromptVersion,
+  PromptArchitectBlueprint,
+  PromptArchitectDraftResponse,
   RegisterResponse,
 } from './types';
 
@@ -61,6 +63,11 @@ export const api = {
   deleteBot: (id: string) => apiRequest<void>(`/admin/bots/${id}`, { method: 'DELETE' }),
   updatePrompt: (id: string, systemPrompt: string) =>
     apiRequest<{ version: number }>(`/admin/bots/${id}/prompt`, { method: 'POST', body: JSON.stringify({ systemPrompt }) }),
+  generatePromptDraft: (id: string, blueprint: PromptArchitectBlueprint) =>
+    apiRequest<PromptArchitectDraftResponse>(`/admin/bots/${id}/prompt-architect/generate`, {
+      method: 'POST',
+      body: JSON.stringify({ blueprint }),
+    }),
   prompts: (id: string) => apiRequest<PromptVersion[]>(`/admin/bots/${id}/prompts`),
   rollbackPrompt: (id: string, version: number) =>
     apiRequest<{ rolledBackTo: string; newVersion: number }>(`/admin/bots/${id}/rollback/${version}`, { method: 'POST' }),
